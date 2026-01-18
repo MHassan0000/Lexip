@@ -21,9 +21,7 @@ export function Footer() {
                             Join thousands of creators who are already boosting their views with AI-powered thumbnails.
                         </p>
                         <div className="flex justify-center gap-4 flex-wrap">
-                            <button className="px-8 py-4 rounded-full bg-primary text-white font-bold hover:bg-primary/80 transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(118,51,255,0.4)]">
-                                Start Generating for Free
-                            </button>
+
                             <button className="px-8 py-4 rounded-full border border-border text-white font-bold hover:bg-surface transition-colors">
                                 Join Creator Community
                             </button>

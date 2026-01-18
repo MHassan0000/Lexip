@@ -12,9 +12,8 @@ import { useAuth } from "@/hooks/use-auth";
 import Image from "next/image";
 
 const navItems = [
-    { name: "Features", href: "/#features" },
-    { name: "How it Works", href: "/#how-it-works" },
-    { name: "Showcase", href: "/#showcase" },
+    { name: "Features", href: "/features" },
+    { name: "Showcase", href: "/showcase" },
     { name: "Pricing", href: "/pricing" },
 ];
 

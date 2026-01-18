@@ -1,18 +1,65 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { FadeIn, SlideIn } from "../ui/animated-container";
 import { Button } from "../ui/button"
-import { Wand2, Layers, ArrowRight, Image } from "lucide-react";
+import { Wand2, Layers, ArrowRight, Image as ImageIcon, Type, Download, Sparkles, Palette } from "lucide-react";
+
+const steps = [
+    {
+        title: "Describe your video topic",
+        description: "Simply type what your video is about. Our AI understands context and nuances.",
+        icon: Sparkles,
+        preview: {
+            title: "Prompt Input",
+            content: "Minecraft survival challenge but I can't touch grass...",
+            color: "bg-primary/20"
+        }
+    },
+    {
+        title: "Choose your style",
+        description: "Select from our curated library of high-performing thumbnail styles.",
+        icon: Palette,
+        preview: {
+            title: "Style Selection",
+            content: "Selected: High Energy Gaming",
+            color: "bg-accent/20"
+        }
+    },
+    {
+        title: "Add text overlay",
+        description: "Customize the text to grab attention and drive clicks.",
+        icon: Type,
+        preview: {
+            title: "Text Overlay",
+            content: "IMPOSSIBLE CHALLENGE!",
+            color: "bg-[#ec4899]/20"
+        }
+    },
+    {
+        title: "Export in 4K",
+        description: "Get your thumbnail in pure 4K resolution, ready for upload.",
+        icon: Download,
+        preview: {
+            title: "Ready to Upload",
+            content: "Downloading thumbnail_4k.png...",
+            color: "bg-[#10b981]/20"
+        }
+    }
+];
+
+
 
 export function AppExplanation() {
+    const [activeStep, setActiveStep] = useState(0);
+
     return (
-        <section className="relative py-24 md:py-32 bg-darker overflow-hidden">
+        <section id="how-it-works" className="relative py-24 md:py-32 bg-darker overflow-hidden">
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
 
-                    {/* Left Column: Text */}
+                    {/* Left Column: Text & Steps */}
                     <div className="space-y-8">
                         <FadeIn>
                             <h2 className="text-4xl md:text-6xl font-bold font-(family-name:--font-space-grotesk) text-white leading-tight">
@@ -27,77 +74,150 @@ export function AppExplanation() {
                             </p>
                         </SlideIn>
 
-                        <SlideIn delay={0.2} className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center">
-                                    <Wand2 className="w-6 h-6 text-primary" />
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-bold">AI-Powered Design</h4>
-                                    <p className="text-sm text-text-tertiary">Generate stunning visuals from a simple prompt</p>
-                                </div>
-                            </div>
+                        <div className="space-y-4 mt-8">
+                            {steps.map((step, i) => (
+                                <motion.div
+                                    key={i}
+                                    initial={{ opacity: 0, x: -20 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.2 + (i * 0.1) }}
+                                    onClick={() => setActiveStep(i)}
+                                    className={`relative p-4 rounded-xl border transition-all duration-300 cursor-pointer ${activeStep === i
+                                        ? "bg-surface border-primary/50 shadow-lg shadow-primary/5"
+                                        : "bg-transparent border-transparent hover:bg-surface/50 hover:border-border"
+                                        }`}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className={`mt-1 w-8 h-8 rounded-full flex items-center justify-center border transition-colors ${activeStep === i
+                                            ? "bg-primary text-white border-primary"
+                                            : "bg-surface border-border text-text-tertiary group-hover:border-primary/50"
+                                            }`}>
+                                            {activeStep === i ? (
+                                                <step.icon className="w-4 h-4" />
+                                            ) : (
+                                                <span className="text-xs font-bold">{i + 1}</span>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <h3 className={`font-bold transition-colors ${activeStep === i ? "text-white" : "text-text-secondary"}`}>
+                                                {step.title}
+                                            </h3>
+                                            <AnimatePresence>
+                                                {activeStep === i && (
+                                                    <motion.p
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: "auto" }}
+                                                        exit={{ opacity: 0, height: 0 }}
+                                                        className="text-sm text-text-tertiary mt-1"
+                                                    >
+                                                        {step.description}
+                                                    </motion.p>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    </div>
 
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-xl bg-surface border border-border flex items-center justify-center">
-                                    <Layers className="w-6 h-6 text-accent" />
-                                </div>
-                                <div>
-                                    <h4 className="text-white font-bold">Multiple Variations</h4>
-                                    <p className="text-sm text-text-tertiary">Get 4 unique styles to choose from</p>
-                                </div>
-                            </div>
-                        </SlideIn>
+                                    {/* Progress Bar for Active Step */}
+                                    {activeStep === i && (
+                                        <motion.div
+                                            layoutId="active-step-indicator"
+                                            className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-l-xl"
+                                        />
+                                    )}
+                                </motion.div>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* Right Column: Visual Card */}
-                    <SlideIn delay={0.3} className="relative">
-                        <div className="relative rounded-3xl bg-dark border border-border p-8 md:p-10 shadow-2xl glass-strong max-w-md mx-auto">
+                    {/* Right Column: Interactive Visual Card */}
+                    <SlideIn delay={0.3} className="relative h-[500px] flex items-center justify-center">
+                        <div className="absolute inset-0 bg-linear-to-br from-primary/10 to-transparent rounded-[2.5rem] blur-3xl -z-10" />
 
-                            <div className="flex items-center justify-between mb-8">
-                                <h3 className="text-xl font-bold text-white">Generate Your Thumbnail</h3>
-                                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                            </div>
-
-                            <div className="space-y-4">
-                                {[
-                                    "Describe your video topic",
-                                    "Choose your style",
-                                    "Add text overlay",
-                                    "Export in 4K"
-                                ].map((item, i) => (
-                                    <motion.div
-                                        key={i}
-                                        initial={{ opacity: 0, x: 20 }}
-                                        whileInView={{ opacity: 1, x: 0 }}
-                                        transition={{ delay: 0.4 + (i * 0.1) }}
-                                        className="flex items-center gap-3 p-3 rounded-lg bg-surface/50 border border-border/50 hover:border-primary/30 transition-colors"
-                                    >
-                                        <div className="w-5 h-5 rounded-full border border-text-tertiary flex items-center justify-center">
-                                            <div className="w-2.5 h-2.5 rounded-full bg-primary opacity-0 hover:opacity-100 transition-opacity" />
-                                        </div>
-                                        <span className="text-text-secondary text-sm">{item}</span>
-                                    </motion.div>
-                                ))}
-                            </div>
-
-                            <div className="mt-8 pt-6 border-t border-border flex items-center justify-between">
-                                <div className="text-xs text-text-tertiary">
-                                    Step 1 of 4
+                        <div className="relative w-full max-w-md rounded-3xl bg-dark border border-border overflow-hidden shadow-2xl glass-strong">
+                            {/* Window Header */}
+                            <div className="px-6 py-4 border-b border-border bg-surface/50 flex items-center justify-between">
+                                <div className="flex gap-2">
+                                    <div className="w-3 h-3 rounded-full bg-red-500/20 border border-red-500/50" />
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500/20 border border-yellow-500/50" />
+                                    <div className="w-3 h-3 rounded-full bg-green-500/20 border border-green-500/50" />
                                 </div>
-                                <Button size="sm" className="bg-primary hover:bg-primary/90 text-white rounded-full px-6">
-                                    Next <ArrowRight className="w-3 h-3 ml-2" />
-                                </Button>
+                                <div className="text-xs font-mono text-text-tertiary">lexip-gen-v2.0</div>
                             </div>
 
-                            {/* Decorative Cubes/Glow */}
-                            <div className="absolute -top-12 -left-12 w-24 h-24 bg-primary/20 rounded-3xl blur-2xl -z-10 animate-pulse" />
-                            <div className="absolute -bottom-8 -right-8 w-32 h-32 bg-accent/10 rounded-full blur-3xl -z-10" />
+                            {/* Dynamic Content */}
+                            <div className="p-8 h-[350px] flex flex-col items-center justify-center relative">
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={activeStep}
+                                        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 1.1, y: -20 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="w-full h-full flex flex-col items-center justify-center gap-6"
+                                    >
+                                        <div className={`w-24 h-24 rounded-2xl flex items-center justify-center ${steps[activeStep].preview.color} mb-4`}>
+                                            {React.createElement(steps[activeStep].icon, { className: "w-12 h-12 text-white" })}
+                                        </div>
+
+                                        <div className="text-center space-y-2 w-full">
+                                            <h4 className="text-xl font-bold text-white">
+                                                {steps[activeStep].preview.title}
+                                            </h4>
+                                            <div className="py-3 px-6 rounded-lg bg-surface border border-border font-mono text-sm text-primary w-full max-w-[90%] mx-auto">
+                                                {steps[activeStep].preview.content}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                </AnimatePresence>
+
+                                {/* Navigation Buttons */}
+                                <div className="absolute bottom-6 left-0 right-0 px-8 flex justify-between items-center">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        disabled={activeStep === 0}
+                                        onClick={() => setActiveStep(prev => prev - 1)}
+                                        className="text-text-tertiary hover:text-white"
+                                    >
+                                        Back
+                                    </Button>
+                                    <div className="flex gap-1">
+                                        {steps.map((_, i) => (
+                                            <div
+                                                key={i}
+                                                className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeStep ? "bg-primary" : "bg-border"}`}
+                                            />
+                                        ))}
+                                    </div>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => {
+                                            if (activeStep < steps.length - 1) {
+                                                setActiveStep(prev => prev + 1);
+                                            } else {
+                                                // Loop back or go to generate
+                                                setActiveStep(0);
+                                            }
+                                        }}
+                                        className="rounded-full bg-primary/20 text-primary hover:bg-primary hover:text-white transition-colors"
+                                    >
+                                        {activeStep === steps.length - 1 ? "Start Over" : "Next"}
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Floating 3D Element Placeholder */}
-                        <div className="absolute top-1/2 -left-8 -translate-y-1/2 bg-darker border border-border p-3 rounded-xl shadow-xl hidden lg:block animate-bounce duration-4000">
-                            <Image className="w-8 h-8 text-primary" />
+                        {/* Floating Element */}
+                        <div className="absolute -right-8 top-20 bg-darker border border-border p-4 rounded-2xl shadow-xl hidden xl:block animate-bounce duration-3000 delay-700">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                                    <Sparkles className="w-5 h-5 text-green-400" />
+                                </div>
+                                <div>
+                                    <div className="text-xs text-text-tertiary">System Status</div>
+                                    <div className="text-sm font-bold text-green-400">Online</div>
+                                </div>
+                            </div>
                         </div>
                     </SlideIn>
 
@@ -106,3 +226,4 @@ export function AppExplanation() {
         </section>
     );
 }
+

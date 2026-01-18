@@ -46,7 +46,7 @@ const advantages = [
 
 export function Advantages() {
     return (
-        <section className="relative py-24 md:py-32 bg-darker overflow-hidden">
+        <section id="showcase" className="relative py-24 md:py-32 bg-darker overflow-hidden">
             {/* Background Gradients */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
                 <div className="absolute top-[20%] left-[-10%] w-125 h-125 bg-primary/10 rounded-full blur-[100px]" />

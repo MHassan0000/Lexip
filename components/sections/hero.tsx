@@ -16,7 +16,7 @@ export function Hero() {
                 <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
             </div>
 
-            <div className="container mx-auto px-4 md:px-6 relative z-10">
+            <div className="container mx-auto px-4 md:px-6 relative z-10 mt-20">
                 <div className="max-w-4xl mx-auto text-center space-y-8">
 
                     <FadeIn>

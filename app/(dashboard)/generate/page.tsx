@@ -1,19 +1,19 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Wand2,
     Loader2,
     AlertCircle,
     Download,
-    Check,
     Sparkles,
     Zap,
-    Info
+    Upload,
+    X,
+    ImageIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { STYLE_PRESETS } from "@/lib/ai/types";
 import { generateThumbnail, getUsageInfo } from "@/actions/generate";
 import type { ThumbnailGeneration } from "@/types/database";
@@ -29,6 +29,11 @@ export default function GeneratePage() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [usage, setUsage] = useState<{ used: number; limit: number; remaining: number; plan: string } | null>(null);
 
+    // Image upload state
+    const [referenceImage, setReferenceImage] = useState<{ base64: string; mimeType: string; preview: string } | null>(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     // Fetch usage info on mount
     useEffect(() => {
         async function fetchUsage() {
@@ -39,6 +44,59 @@ export default function GeneratePage() {
         }
         fetchUsage();
     }, [generation]);
+
+    const handleFileSelect = (file: File) => {
+        if (!file.type.startsWith("image/")) {
+            setError("Please upload an image file");
+            return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) { // 10MB limit
+            setError("Image must be less than 10MB");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const base64Full = e.target?.result as string;
+            const base64Data = base64Full.split(",")[1]; // Remove data:image/...;base64, prefix
+            setReferenceImage({
+                base64: base64Data,
+                mimeType: file.type,
+                preview: base64Full
+            });
+            setError(null);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const file = e.dataTransfer.files[0];
+        if (file) handleFileSelect(file);
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = () => {
+        setIsDragging(false);
+    };
+
+    const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) handleFileSelect(file);
+    };
+
+    const removeReferenceImage = () => {
+        setReferenceImage(null);
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    };
 
     const handleGenerate = async () => {
         if (!prompt.trim()) {
@@ -55,6 +113,10 @@ export default function GeneratePage() {
             prompt: prompt.trim(),
             styleId: selectedStyle,
             count: 1,
+            referenceImage: referenceImage ? {
+                base64: referenceImage.base64,
+                mimeType: referenceImage.mimeType
+            } : undefined,
         });
 
         setIsGenerating(false);
@@ -123,6 +185,67 @@ export default function GeneratePage() {
                             </div>
                         )}
 
+                        {/* Reference Image Upload */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-white flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4" />
+                                Reference Image <span className="text-text-tertiary font-normal">(optional)</span>
+                            </label>
+
+                            {referenceImage ? (
+                                <div className="relative p-4 rounded-xl bg-surface border border-border">
+                                    <div className="flex items-center gap-4">
+                                        <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-dark">
+                                            <Image
+                                                src={referenceImage.preview}
+                                                alt="Reference"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm text-white font-medium">Image uploaded</p>
+                                            <p className="text-xs text-text-tertiary">
+                                                This image will be used as a reference for generation
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={removeReferenceImage}
+                                            className="p-2 rounded-lg bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div
+                                    onDrop={handleDrop}
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className={`p-6 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center ${isDragging
+                                        ? "border-primary bg-primary/10"
+                                        : "border-border hover:border-text-tertiary bg-surface"
+                                        }`}
+                                >
+                                    <Upload className={`w-8 h-8 mx-auto mb-3 ${isDragging ? "text-primary" : "text-text-tertiary"}`} />
+                                    <p className="text-sm text-text-secondary mb-1">
+                                        Drag & drop an image or <span className="text-primary">browse</span>
+                                    </p>
+                                    <p className="text-xs text-text-tertiary">
+                                        PNG, JPG up to 10MB
+                                    </p>
+                                </div>
+                            )}
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleFileInputChange}
+                                className="hidden"
+                            />
+                        </div>
+
                         {/* Prompt Input */}
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-white">
@@ -145,10 +268,10 @@ export default function GeneratePage() {
                                 {STYLE_PRESETS.map((style) => (
                                     <button
                                         key={style.id}
-                                        onClick={() => setSelectedStyle(style.id)}
-                                        className={`p-3 rounded-xl border transition-all text-left ${selectedStyle === style.id
-                                                ? "bg-primary/20 border-primary text-white"
-                                                : "bg-surface border-border text-text-secondary hover:border-text-tertiary"
+                                        onClick={() => setSelectedStyle(selectedStyle === style.id ? "" : style.id)}
+                                        className={`p-3 rounded-xl border transition-all text-center ${selectedStyle === style.id
+                                            ? "bg-primary/20 border-primary text-white"
+                                            : "bg-surface border-border text-text-secondary hover:border-text-tertiary"
                                             }`}
                                     >
                                         <span className="text-sm font-medium block">{style.name}</span>
@@ -199,7 +322,7 @@ export default function GeneratePage() {
 
                     {/* Right Column - Result */}
                     <div className="lg:sticky lg:top-24 h-fit">
-                        <div className="rounded-2xl bg-surface border border-border p-6 min-h-[400px] flex flex-col">
+                        <div className="rounded-2xl bg-surface border border-border p-6 min-h-100 flex flex-col">
                             <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                                 <Sparkles className="w-5 h-5 text-primary" />
                                 Generated Result
@@ -247,8 +370,8 @@ export default function GeneratePage() {
                                                         key={i}
                                                         onClick={() => setSelectedImage(url)}
                                                         className={`relative w-16 h-10 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === url
-                                                                ? "border-primary"
-                                                                : "border-transparent opacity-60 hover:opacity-100"
+                                                            ? "border-primary"
+                                                            : "border-transparent opacity-60 hover:opacity-100"
                                                             }`}
                                                     >
                                                         <Image

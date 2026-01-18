@@ -18,28 +18,44 @@ export class GeminiProvider implements AIProvider {
     async generateImages(options: GenerationOptions): Promise<GenerationResult> {
         try {
             const enhancedPrompt = buildEnhancedPrompt(options.prompt, options.style);
-            const count = options.count || 1;
+            console.log("Generating image with prompt:", enhancedPrompt.substring(0, 100) + "...");
+
             const images: GeneratedImage[] = [];
 
-            // Generate images (Gemini may support batch, but we'll do sequential for safety)
-            for (let i = 0; i < count; i++) {
-                const response = await this.client.models.generateContent({
-                    model: this.model,
-                    contents: enhancedPrompt,
-                    config: {
-                        responseModalities: [Modality.TEXT, Modality.IMAGE],
-                    },
-                });
+            // Build content parts - text prompt first, then optional image
+            const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = [
+                { text: enhancedPrompt }
+            ];
 
-                // Extract images from response
-                if (response.candidates && response.candidates[0]?.content?.parts) {
-                    for (const part of response.candidates[0].content.parts) {
-                        if (part.inlineData?.data && part.inlineData?.mimeType) {
-                            images.push({
-                                base64: part.inlineData.data,
-                                mimeType: part.inlineData.mimeType,
-                            });
-                        }
+            // Add reference image if provided
+            if (options.referenceImage) {
+                console.log("Including reference image in generation");
+                parts.push({
+                    inlineData: {
+                        data: options.referenceImage.base64,
+                        mimeType: options.referenceImage.mimeType
+                    }
+                });
+            }
+
+            const response = await this.client.models.generateContent({
+                model: this.model,
+                contents: [{ role: "user", parts }],
+                config: {
+                    responseModalities: [Modality.TEXT, Modality.IMAGE],
+                },
+            });
+
+            console.log("Gemini response received");
+
+            // Extract images from response
+            if (response.candidates && response.candidates[0]?.content?.parts) {
+                for (const part of response.candidates[0].content.parts) {
+                    if (part.inlineData?.data && part.inlineData?.mimeType) {
+                        images.push({
+                            base64: part.inlineData.data,
+                            mimeType: part.inlineData.mimeType,
+                        });
                     }
                 }
             }
@@ -56,23 +72,32 @@ export class GeminiProvider implements AIProvider {
                 images,
                 promptUsed: enhancedPrompt,
             };
-        } catch (error) {
+        } catch (error: unknown) {
             console.error("Gemini generation error:", error);
 
-            const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+            const errorString = String(error);
+            const errorMessage = error instanceof Error ? error.message : errorString;
 
-            // Handle specific error cases
-            if (errorMessage.includes("SAFETY")) {
+            if (errorString.includes("SAFETY") || errorString.includes("safety")) {
                 return {
                     success: false,
                     error: "The AI declined to generate this image due to safety guidelines. Please try a different prompt.",
                 };
             }
 
-            if (errorMessage.includes("quota") || errorMessage.includes("rate")) {
+            if (errorString.includes("quota") || errorString.includes("QUOTA") ||
+                errorString.includes("rate") || errorString.includes("RATE") ||
+                errorString.includes("429") || errorString.includes("RESOURCE_EXHAUSTED")) {
                 return {
                     success: false,
                     error: "API rate limit reached. Please try again in a moment.",
+                };
+            }
+
+            if (errorString.includes("404") || errorString.includes("NOT_FOUND")) {
+                return {
+                    success: false,
+                    error: "The image generation model is not available. Please check your API key permissions.",
                 };
             }
 

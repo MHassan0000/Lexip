@@ -6,6 +6,10 @@ export interface GenerationOptions {
     aspectRatio?: "16:9" | "1:1" | "4:3";
     quality?: "standard" | "hd" | "4k";
     count?: number; // Number of images to generate
+    referenceImage?: {
+        base64: string;
+        mimeType: string;
+    };
 }
 
 export interface GeneratedImage {

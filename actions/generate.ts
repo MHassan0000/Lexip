@@ -20,6 +20,10 @@ interface GenerateInput {
     prompt: string;
     styleId?: string;
     count?: number;
+    referenceImage?: {
+        base64: string;
+        mimeType: string;
+    };
 }
 
 export async function generateThumbnail(
@@ -83,6 +87,7 @@ export async function generateThumbnail(
             prompt: input.prompt,
             style,
             count: input.count || 1,
+            referenceImage: input.referenceImage,
         });
 
         if (!result.success || !result.images || result.images.length === 0) {

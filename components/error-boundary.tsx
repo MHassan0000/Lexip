@@ -46,7 +46,7 @@ export class ErrorBoundary extends Component<Props, State> {
             }
 
             return (
-                <div className="min-h-[400px] flex items-center justify-center p-8">
+                <div className="min-h-100 flex items-center justify-center p-8">
                     <div className="text-center max-w-md">
                         <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mx-auto mb-6">
                             <AlertTriangle className="w-8 h-8 text-red-500" />

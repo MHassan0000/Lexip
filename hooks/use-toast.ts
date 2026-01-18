@@ -17,7 +17,7 @@ interface UseToastReturn {
             success: string;
             error: string;
         }
-    ) => Promise<T>;
+    ) => void;
 }
 
 export function useToast(): UseToastReturn {
@@ -46,15 +46,15 @@ export function useToast(): UseToastReturn {
     }, []);
 
     const promiseToast = useCallback(
-        async <T,>(
+        <T,>(
             promise: Promise<T>,
             messages: {
                 loading: string;
                 success: string;
                 error: string;
             }
-        ): Promise<T> => {
-            return toast.promise(promise, messages) as Promise<T>;
+        ): void => {
+            toast.promise(promise, messages);
         },
         []
     );

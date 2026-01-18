@@ -4,17 +4,18 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useScrollPosition } from "@/hooks/use-scroll-position";
+import { useAuth } from "@/hooks/use-auth";
 import Image from "next/image";
 
 const navItems = [
     { name: "Features", href: "/#features" },
     { name: "How it Works", href: "/#how-it-works" },
     { name: "Showcase", href: "/#showcase" },
-    { name: "Pricing", href: "/#pricing" },
+    { name: "Pricing", href: "/pricing" },
 ];
 
 export function Navbar() {
@@ -22,6 +23,7 @@ export function Navbar() {
     const isScrolled = scrollPosition.y > 20;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const pathname = usePathname();
+    const { user, isLoading } = useAuth();
 
     // Close mobile menu when route changes
     useEffect(() => {
@@ -69,16 +71,29 @@ export function Navbar() {
 
                         {/* Desktop Auth Buttons */}
                         <div className="hidden md:flex items-center gap-4">
-                            <Link href="/login">
-                                <Button variant="ghost" size="sm" className="text-text-secondary hover:text-white">
-                                    Sign In
-                                </Button>
-                            </Link>
-                            <Link href="/register">
-                                <Button variant="primary" size="sm" className="glow-primary hover:glow-primary-strong">
-                                    Get Started
-                                </Button>
-                            </Link>
+                            {isLoading ? (
+                                <div className="w-24 h-9 bg-surface animate-pulse rounded-lg" />
+                            ) : user ? (
+                                <Link href="/dashboard">
+                                    <Button variant="primary" size="sm" className="glow-primary hover:glow-primary-strong">
+                                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                                        Dashboard
+                                    </Button>
+                                </Link>
+                            ) : (
+                                <>
+                                    <Link href="/login">
+                                        <Button variant="ghost" size="sm" className="text-text-secondary hover:text-white">
+                                            Sign In
+                                        </Button>
+                                    </Link>
+                                    <Link href="/register">
+                                        <Button variant="primary" size="sm" className="glow-primary hover:glow-primary-strong">
+                                            Get Started
+                                        </Button>
+                                    </Link>
+                                </>
+                            )}
                         </div>
 
                         {/* Mobile Menu Toggle */}
@@ -130,16 +145,27 @@ export function Navbar() {
                                 transition={{ delay: 0.5 }}
                                 className="mt-8 flex flex-col gap-4"
                             >
-                                <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
-                                    <Button variant="secondary" size="lg" className="w-full justify-center">
-                                        Sign In
-                                    </Button>
-                                </Link>
-                                <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                                    <Button variant="primary" size="lg" className="w-full justify-center shadow-lg shadow-primary/20">
-                                        Get Started
-                                    </Button>
-                                </Link>
+                                {user ? (
+                                    <Link href="/dashboard" onClick={() => setIsMobileMenuOpen(false)}>
+                                        <Button variant="primary" size="lg" className="w-full justify-center shadow-lg shadow-primary/20">
+                                            <LayoutDashboard className="w-5 h-5 mr-2" />
+                                            Dashboard
+                                        </Button>
+                                    </Link>
+                                ) : (
+                                    <>
+                                        <Link href="/login" onClick={() => setIsMobileMenuOpen(false)}>
+                                            <Button variant="secondary" size="lg" className="w-full justify-center">
+                                                Sign In
+                                            </Button>
+                                        </Link>
+                                        <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
+                                            <Button variant="primary" size="lg" className="w-full justify-center shadow-lg shadow-primary/20">
+                                                Get Started
+                                            </Button>
+                                        </Link>
+                                    </>
+                                )}
                             </motion.div>
                         </div>
                     </motion.div>

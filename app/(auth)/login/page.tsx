@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { Mail, Lock, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Lock, Loader2, AlertCircle, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
@@ -55,6 +55,15 @@ export default function LoginPage() {
 
     return (
         <div className="w-full max-w-md mx-auto px-4">
+            {/* Back Button */}
+            <Link
+                href="/"
+                className="inline-flex items-center gap-2 text-text-secondary hover:text-white transition-colors mb-6"
+            >
+                <ArrowLeft className="w-4 h-4" />
+                <span className="text-sm">Back to home</span>
+            </Link>
+
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}

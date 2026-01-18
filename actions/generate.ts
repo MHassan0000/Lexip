@@ -34,9 +34,9 @@ export async function generateThumbnail(
             return { success: false, error: "Unauthorized" };
         }
 
-        // Check usage limit first
-        const { data: canGenerate, error: usageError } = await supabase.rpc(
-            "increment_usage",
+        // Check usage limit first (without incrementing)
+        const { data: usage, error: usageError } = await supabase.rpc(
+            "get_or_create_daily_usage",
             { p_user_id: user.id }
         );
 
@@ -45,7 +45,8 @@ export async function generateThumbnail(
             return { success: false, error: "Failed to check usage limits" };
         }
 
-        if (!canGenerate) {
+        // Check if user has remaining generations
+        if (usage.generations_count >= usage.max_generations) {
             return {
                 success: false,
                 error: "Daily generation limit reached. Upgrade your plan for more generations!"
@@ -85,7 +86,7 @@ export async function generateThumbnail(
         });
 
         if (!result.success || !result.images || result.images.length === 0) {
-            // Update generation as failed
+            // Update generation as failed - DO NOT increment usage
             await supabase
                 .from("thumbnail_generations")
                 .update({
@@ -118,6 +119,9 @@ export async function generateThumbnail(
 
             return { success: false, error: "Failed to upload generated images" };
         }
+
+        // SUCCESS! Now increment usage count
+        await supabase.rpc("increment_usage", { p_user_id: user.id });
 
         // Update generation with image URLs
         const { data: updatedGeneration, error: updateError } = await supabase

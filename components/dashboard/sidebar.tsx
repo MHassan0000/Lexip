@@ -66,8 +66,14 @@ export function DashboardSidebar() {
             {/* Logo */}
             <div className="p-6 border-b border-border">
                 <Link href="/" className="flex items-center gap-3">
-                    <div className="relative w-10 h-10 rounded-xl bg-linear-to-br from-primary to-accent flex items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-white" />
+                    <div className="relative w-10 h-10 rounded-xl flex items-center justify-center">
+                        <Image
+                            src="/images/logo.png"
+                            alt="Logo"
+                            width={40}
+                            height={40}
+                            className="object-contain"
+                        />
                     </div>
                     <span className="text-xl font-bold text-white font-(family-name:--font-space-grotesk)">
                         Lexip

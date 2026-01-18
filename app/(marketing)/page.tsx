@@ -10,7 +10,7 @@ import { Footer } from "@/components/sections/footer";
 
 export default function HomePage() {
     return (
-        <div className="relative min-h-screen bg-[#0a0a0f] selection:bg-[#7633ff]/30 selection:text-white">
+        <div className="relative min-h-screen bg-darker selection:bg-primary/30 selection:text-white">
             {/* Navbar */}
             <Navbar />
 

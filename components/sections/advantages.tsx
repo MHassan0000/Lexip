@@ -46,22 +46,22 @@ const advantages = [
 
 export function Advantages() {
     return (
-        <section className="relative py-24 md:py-32 bg-[#0a0a0f] overflow-hidden">
+        <section className="relative py-24 md:py-32 bg-darker overflow-hidden">
             {/* Background Gradients */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[20%] left-[-10%] w-[500px] h-[500px] bg-[#7633ff]/10 rounded-full blur-[100px]" />
-                <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-[#00b8e6]/10 rounded-full blur-[100px]" />
+                <div className="absolute top-[20%] left-[-10%] w-125 h-125 bg-primary/10 rounded-full blur-[100px]" />
+                <div className="absolute bottom-[10%] right-[-5%] w-100 h-100 bg-accent/10 rounded-full blur-[100px]" />
             </div>
 
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-20">
                     <FadeIn>
-                        <h2 className="text-3xl md:text-5xl font-bold font-[family-name:var(--font-space-grotesk)] mb-6">
-                            Advantages of <span className="gradient-text">Smooth</span> and Effortless <span className="text-[#00b8e6]">Thumbnail Creation</span>
+                        <h2 className="text-3xl md:text-5xl font-bold font-(family-name:--font-space-grotesk) mb-6">
+                            Advantages of <span className="gradient-text">Smooth</span> and Effortless <span className="text-accent">Thumbnail Creation</span>
                         </h2>
                     </FadeIn>
                     <SlideIn delay={0.1}>
-                        <p className="text-lg text-[#a1a1aa]">
+                        <p className="text-lg text-text-secondary">
                             Unlock the full potential of your channel with features designed for speed, quality, and growth.
                         </p>
                     </SlideIn>
@@ -77,9 +77,9 @@ export function Advantages() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1, duration: 0.5 }}
-                                className="group relative p-8 rounded-2xl bg-[#141420]/50 border border-[#2a2a38] hover:bg-[#1a1a29] transition-all duration-300 hover:-translate-y-1 hover:border-[#7633ff]/30 overflow-hidden"
+                                className="group relative p-8 rounded-2xl bg-surface/50 border border-border hover:bg-[#1a1a29] transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 overflow-hidden"
                             >
-                                <div className="absolute inset-0 bg-gradient-to-br from-[#7633ff]/0 to-[#7633ff]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                <div className="absolute inset-0 bg-linear-to-br from-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                                 <div
                                     className="w-12 h-12 rounded-lg flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110"
@@ -88,10 +88,10 @@ export function Advantages() {
                                     <Icon className="w-6 h-6" style={{ color: item.color }} />
                                 </div>
 
-                                <h3 className="text-xl font-bold text-white mb-3 font-[family-name:var(--font-space-grotesk)]">
+                                <h3 className="text-xl font-bold text-white mb-3 font-(family-name:--font-space-grotesk)">
                                     {item.title}
                                 </h3>
-                                <p className="text-[#a1a1aa] leading-relaxed relative z-10">
+                                <p className="text-text-secondary leading-relaxed relative z-10">
                                     {item.description}
                                 </p>
                             </motion.div>

@@ -31,16 +31,16 @@ const steps = [
 
 export function HowItWorks() {
     return (
-        <section id="how-it-works" className="relative py-24 md:py-32 bg-[#0a0a0f] overflow-hidden">
+        <section id="how-it-works" className="relative py-24 md:py-32 bg-darker overflow-hidden">
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className="text-center max-w-3xl mx-auto mb-20">
                     <FadeIn>
-                        <h2 className="text-3xl md:text-5xl font-bold font-[family-name:var(--font-space-grotesk)] mb-6">
+                        <h2 className="text-3xl md:text-5xl font-bold font-(family-name:--font-space-grotesk) mb-6">
                             From Idea to <span className="gradient-text">Viral</span> in 3 Steps
                         </h2>
                     </FadeIn>
                     <SlideIn delay={0.1}>
-                        <p className="text-lg text-[#a1a1aa]">
+                        <p className="text-lg text-text-secondary">
                             No Photoshop skills required. We've streamlined the professional design workflow into a simple conversation.
                         </p>
                     </SlideIn>
@@ -48,8 +48,8 @@ export function HowItWorks() {
 
                 <div className="grid md:grid-cols-3 gap-12 relative">
                     {/* Connecting Line (Desktop) */}
-                    <div className="hidden md:block absolute top-[60px] left-[16%] right-[16%] h-0.5 bg-[#2a2a38]">
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#7633ff] to-transparent w-1/2 mx-auto opacity-50 blur-[1px]" />
+                    <div className="hidden md:block absolute top-15 left-[16%] right-[16%] h-0.5 bg-border">
+                        <div className="absolute inset-0 bg-linear-to-r from-transparent via-primary to-transparent w-1/2 mx-auto opacity-50 blur-[1px]" />
                     </div>
 
                     {steps.map((step, index) => {
@@ -65,20 +65,20 @@ export function HowItWorks() {
                             >
                                 {/* Step Number Badge */}
                                 <div
-                                    className="w-12 h-12 rounded-full border border-[#2a2a38] bg-[#0a0a0f] flex items-center justify-center text-lg font-bold font-mono text-[#a1a1aa] mb-8 relative z-10 group-hover:border-[var(--step-color)] transition-colors duration-300 shadow-xl"
+                                    className="w-12 h-12 rounded-full border border-border bg-darker flex items-center justify-center text-lg font-bold font-mono text-text-secondary mb-8 relative z-10 group-hover:border-(--step-color) transition-colors duration-300 shadow-xl"
                                     style={{ "--step-color": step.color } as React.CSSProperties}
                                 >
                                     {step.id}
                                 </div>
 
                                 <div
-                                    className="mb-8 p-6 rounded-2xl bg-[#141420] border border-[#2a2a38] group-hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden"
+                                    className="mb-8 p-6 rounded-2xl bg-surface border border-border group-hover:-translate-y-2 transition-transform duration-300 relative overflow-hidden"
                                 >
                                     <div
-                                        className="absolute inset-0 bg-[var(--step-color)] opacity-0 group-hover:opacity-5 transition-opacity duration-300"
+                                        className="absolute inset-0 bg-(--step-color) opacity-0 group-hover:opacity-5 transition-opacity duration-300"
                                         style={{ "--step-color": step.color } as React.CSSProperties}
                                     />
-                                    <div className="w-16 h-16 rounded-xl bg-[#0a0a0f] flex items-center justify-center mx-auto relative z-10">
+                                    <div className="w-16 h-16 rounded-xl bg-darker flex items-center justify-center mx-auto relative z-10">
                                         <Icon
                                             className="w-8 h-8 transition-colors duration-300"
                                             style={{ color: step.color }}
@@ -86,10 +86,10 @@ export function HowItWorks() {
                                     </div>
                                 </div>
 
-                                <h3 className="text-xl font-bold text-white mb-3 font-[family-name:var(--font-space-grotesk)]">
+                                <h3 className="text-xl font-bold text-white mb-3 font-(family-name:--font-space-grotesk)">
                                     {step.title}
                                 </h3>
-                                <p className="text-[#a1a1aa] leading-relaxed max-w-xs">
+                                <p className="text-text-secondary leading-relaxed max-w-xs">
                                     {step.description}
                                 </p>
                             </motion.div>

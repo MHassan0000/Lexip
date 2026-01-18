@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Card } from "@/components/ui/card";
+import { Card } from "../ui/card"
 import { cn } from "@/lib/utils";
 import { LucideIcon } from "lucide-react";
 
@@ -21,7 +21,7 @@ export function FeatureCard({
     description,
     delay = 0,
     className,
-    gradient = "from-[#7633ff] to-[#00b8e6]",
+    gradient = "from-primary to-accent",
 }: FeatureCardProps) {
     return (
         <motion.div
@@ -34,31 +34,31 @@ export function FeatureCard({
             <div className="group relative h-full">
                 {/* Glow Effect / Backdrop */}
                 <div className={cn(
-                    "absolute -inset-0.5 rounded-2xl bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-md -z-10",
+                    "absolute -inset-0.5 rounded-2xl bg-linear-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-md -z-10",
                     gradient
                 )} />
 
                 <Card className={cn(
-                    "relative h-full overflow-hidden border-[#2a2a38] bg-[#0a0a0f] p-8 transition-all duration-300 group-hover:-translate-y-1 group-hover:border-[#3a3a4a] group-hover:shadow-2xl",
+                    "relative h-full overflow-hidden border-border bg-darker p-8 transition-all duration-300 group-hover:-translate-y-1 group-hover:border-[#3a3a4a] group-hover:shadow-2xl",
                     className
                 )}>
                     {/* Inner Gradient Bloom */}
                     <div className={cn(
-                        "absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 rounded-full bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-2xl",
+                        "absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 rounded-full bg-linear-to-br opacity-0 group-hover:opacity-10 transition-opacity duration-500 blur-2xl",
                         gradient
                     )} />
 
                     <div className="relative z-10 flex flex-col h-full">
                         {/* Icon Container */}
-                        <div className="mb-6 inline-flex p-3 rounded-xl bg-[#1a1a24] border border-[#2a2a38] group-hover:border-[#7633ff]/30 transition-colors w-fit">
+                        <div className="mb-6 inline-flex p-3 rounded-xl bg-surface border border-border group-hover:border-primary/30 transition-colors w-fit">
                             <Icon className="w-6 h-6 text-white" />
                         </div>
 
-                        <h3 className="text-xl font-bold font-[family-name:var(--font-space-grotesk)] text-white mb-3 group-hover:text-[#7633ff] transition-colors">
+                        <h3 className="text-xl font-bold font-(family-name:--font-space-grotesk) text-white mb-3 group-hover:text-primary transition-colors">
                             {title}
                         </h3>
 
-                        <p className="text-[#a1a1aa] leading-relaxed flex-grow">
+                        <p className="text-text-secondary leading-relaxed grow">
                             {description}
                         </p>
 

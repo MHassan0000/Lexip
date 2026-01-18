@@ -5,9 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import { useScrollPosition } from "@/hooks/use-scroll-position";
+import Image from "next/image";
 
 const navItems = [
     { name: "Features", href: "/#features" },
@@ -36,7 +37,7 @@ export function Navbar() {
                 className={cn(
                     "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
                     isScrolled
-                        ? "bg-[#0a0a0f]/80 backdrop-blur-md border-b border-[#2a2a38] py-4"
+                        ? "bg-darker/80 backdrop-blur-md border-b border-border py-4"
                         : "bg-transparent py-6"
                 )}
             >
@@ -44,11 +45,10 @@ export function Navbar() {
                     <div className="flex items-center justify-between">
                         {/* Logo */}
                         <Link href="/" className="flex items-center gap-2 group">
-                            <div className="relative w-8 h-8 rounded-lg bg-gradient-to-br from-[#7633ff] to-[#00b8e6] flex items-center justify-center overflow-hidden group-hover:glow-primary transition-all duration-300">
-                                <Sparkles className="w-5 h-5 text-white" />
-                                <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="relative w-12 h-12 rounded-lg flex items-center gap-2 justify-center overflow-hidden group-hover:glow-primary transition-all duration-300">
+                                <Image src="/images/logo.png" alt="Logo" width={50} height={50} />
                             </div>
-                            <span className="text-xl font-bold font-[family-name:var(--font-space-grotesk)] tracking-tight">
+                            <span className="text-3xl font-bold font-(family-name:--font-space-grotesk) tracking-tight">
                                 Lexip
                             </span>
                         </Link>
@@ -59,10 +59,10 @@ export function Navbar() {
                                 <Link
                                     key={item.name}
                                     href={item.href}
-                                    className="text-sm font-medium text-[#a1a1aa] hover:text-white transition-colors relative group"
+                                    className="text-sm font-medium text-text-secondary hover:text-white transition-colors relative group"
                                 >
                                     {item.name}
-                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#7633ff] transition-all duration-300 group-hover:w-full" />
+                                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
                                 </Link>
                             ))}
                         </nav>
@@ -70,7 +70,7 @@ export function Navbar() {
                         {/* Desktop Auth Buttons */}
                         <div className="hidden md:flex items-center gap-4">
                             <Link href="/login">
-                                <Button variant="ghost" size="sm" className="text-[#a1a1aa] hover:text-white">
+                                <Button variant="ghost" size="sm" className="text-text-secondary hover:text-white">
                                     Sign In
                                 </Button>
                             </Link>
@@ -84,7 +84,7 @@ export function Navbar() {
                         {/* Mobile Menu Toggle */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden p-2 text-[#a1a1aa] hover:text-white transition-colors"
+                            className="md:hidden p-2 text-text-secondary hover:text-white transition-colors"
                         >
                             {isMobileMenuOpen ? (
                                 <X className="w-6 h-6" />
@@ -104,7 +104,7 @@ export function Navbar() {
                         animate={{ opacity: 1, height: "100vh" }}
                         exit={{ opacity: 0, height: 0 }}
                         transition={{ duration: 0.3, ease: "easeInOut" }}
-                        className="fixed inset-0 z-40 bg-[#0a0a0f] pt-24 px-4 md:hidden overflow-hidden"
+                        className="fixed inset-0 z-40 bg-darker pt-24 px-4 md:hidden overflow-hidden"
                     >
                         <div className="flex flex-col gap-6">
                             {navItems.map((item, index) => (
@@ -116,7 +116,7 @@ export function Navbar() {
                                 >
                                     <Link
                                         href={item.href}
-                                        className="text-2xl font-medium text-white hover:text-[#7633ff] transition-colors"
+                                        className="text-2xl font-medium text-white hover:text-primary transition-colors"
                                         onClick={() => setIsMobileMenuOpen(false)}
                                     >
                                         {item.name}
@@ -136,7 +136,7 @@ export function Navbar() {
                                     </Button>
                                 </Link>
                                 <Link href="/register" onClick={() => setIsMobileMenuOpen(false)}>
-                                    <Button variant="primary" size="lg" className="w-full justify-center shadow-lg shadow-[#7633ff]/20">
+                                    <Button variant="primary" size="lg" className="w-full justify-center shadow-lg shadow-primary/20">
                                         Get Started
                                     </Button>
                                 </Link>

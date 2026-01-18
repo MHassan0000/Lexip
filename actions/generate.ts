@@ -1,15 +1,28 @@
 "use server";
 
+/**
+ * Generate Thumbnail Server Action
+ * 
+ * SECURITY MEASURES:
+ * - Rate limiting (10 requests/minute per user)
+ * - Input validation with Zod schema
+ * - User authentication required
+ * - Usage limits from subscription plan
+ */
+
 import { createClient } from "@/lib/supabase/server";
 import { getAIProvider, getStyleById } from "@/lib/ai";
 import { uploadMultipleImages } from "@/lib/supabase/storage";
 import { revalidatePath } from "next/cache";
 import type { ThumbnailGeneration } from "@/types/database";
+import { checkRateLimit, rateLimitExceededError } from "@/lib/security/rate-limit";
+import { validateInput, generateInputSchema } from "@/lib/security/validation";
 
 interface ActionResponse<T = null> {
     success: boolean;
     data?: T;
     error?: string;
+    retryAfter?: number; // For rate limit 429 responses
 }
 
 // =============================================
@@ -32,11 +45,24 @@ export async function generateThumbnail(
     try {
         const supabase = await createClient();
 
-        // Get current user
+        // SECURITY: Get current user (authentication required)
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
             return { success: false, error: "Unauthorized" };
         }
+
+        // SECURITY: Rate limiting - 10 requests per minute per user
+        const rateLimitResult = checkRateLimit("generate", user.id);
+        if (!rateLimitResult.success) {
+            return rateLimitExceededError(rateLimitResult);
+        }
+
+        // SECURITY: Validate and sanitize input
+        const validation = validateInput(generateInputSchema, input);
+        if (!validation.success) {
+            return { success: false, error: validation.error };
+        }
+        const validatedInput = validation.data!;
 
         // Check usage limit first (without incrementing)
         const { data: usage, error: usageError } = await supabase.rpc(
@@ -58,19 +84,19 @@ export async function generateThumbnail(
         }
 
         // Get style preset if provided
-        const style = input.styleId ? getStyleById(input.styleId) : undefined;
+        const style = validatedInput.styleId ? getStyleById(validatedInput.styleId) : undefined;
 
         // Create initial generation record
         const { data: generation, error: insertError } = await supabase
             .from("thumbnail_generations")
             .insert({
                 user_id: user.id,
-                prompt: input.prompt,
-                style: input.styleId || null,
+                prompt: validatedInput.prompt,
+                style: validatedInput.styleId || null,
                 status: "processing",
                 metadata: {
                     style_name: style?.name,
-                    requested_count: input.count || 1,
+                    requested_count: validatedInput.count || 1,
                 },
             })
             .select()
@@ -84,10 +110,10 @@ export async function generateThumbnail(
         // Generate images using AI
         const provider = getAIProvider("gemini");
         const result = await provider.generateImages({
-            prompt: input.prompt,
+            prompt: validatedInput.prompt,
             style,
-            count: input.count || 1,
-            referenceImage: input.referenceImage,
+            count: validatedInput.count || 1,
+            referenceImage: validatedInput.referenceImage,
         });
 
         if (!result.success || !result.images || result.images.length === 0) {

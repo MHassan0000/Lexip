@@ -1,14 +1,41 @@
 "use server";
 
+/**
+ * Stripe Payment Server Actions
+ * 
+ * SECURITY MEASURES:
+ * - Rate limiting to prevent abuse
+ * - Input validation with Zod schemas
+ * - User authentication required
+ * - Environment variables for all secrets
+ */
+
 import { stripe } from "@/lib/stripe/client";
 import { createClient } from "@/lib/supabase/server";
 import { PRICING_PLANS } from "@/lib/stripe/config";
+import { checkRateLimit, rateLimitExceededError } from "@/lib/security/rate-limit";
+import { validateInput } from "@/lib/security/validation";
+import { z } from "zod";
 
 interface ActionResponse<T = null> {
     success: boolean;
     data?: T;
     error?: string;
+    retryAfter?: number;
 }
+
+// =============================================
+// VALIDATION SCHEMAS
+// =============================================
+
+const checkoutInputSchema = z.object({
+    planId: z.enum(["pro", "enterprise"]),
+    billingPeriod: z.enum(["monthly", "yearly"]),
+    successUrl: z.string().url().max(500).optional(),
+    cancelUrl: z.string().url().max(500).optional(),
+}).strict();
+
+const urlSchema = z.string().url().max(500);
 
 // =============================================
 // CREATE CHECKOUT SESSION
@@ -27,19 +54,32 @@ export async function createCheckoutSession(
     try {
         const supabase = await createClient();
 
-        // Get current user
+        // SECURITY: Authentication required
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
             return { success: false, error: "Unauthorized" };
         }
 
+        // SECURITY: Rate limiting - prevent checkout abuse
+        const rateLimitResult = checkRateLimit("default", user.id);
+        if (!rateLimitResult.success) {
+            return rateLimitExceededError(rateLimitResult);
+        }
+
+        // SECURITY: Input validation
+        const validation = validateInput(checkoutInputSchema, input);
+        if (!validation.success) {
+            return { success: false, error: validation.error };
+        }
+        const validatedInput = validation.data!;
+
         // Get plan
-        const plan = PRICING_PLANS[input.planId];
+        const plan = PRICING_PLANS[validatedInput.planId];
         if (!plan) {
             return { success: false, error: "Invalid plan" };
         }
 
-        const priceId = plan.stripePriceId[input.billingPeriod];
+        const priceId = plan.stripePriceId[validatedInput.billingPeriod];
         if (!priceId || priceId.startsWith("price_")) {
             return { success: false, error: "Stripe price not configured. Please set up Stripe price IDs." };
         }
@@ -83,16 +123,16 @@ export async function createCheckoutSession(
                     quantity: 1,
                 },
             ],
-            success_url: input.successUrl || `${appUrl}/dashboard?upgrade=success`,
-            cancel_url: input.cancelUrl || `${appUrl}/pricing?upgrade=cancelled`,
+            success_url: validatedInput.successUrl || `${appUrl}/dashboard?upgrade=success`,
+            cancel_url: validatedInput.cancelUrl || `${appUrl}/pricing?upgrade=cancelled`,
             metadata: {
                 supabase_user_id: user.id,
-                plan_id: input.planId,
+                plan_id: validatedInput.planId,
             },
             subscription_data: {
                 metadata: {
                     supabase_user_id: user.id,
-                    plan_id: input.planId,
+                    plan_id: validatedInput.planId,
                 },
             },
         });
@@ -118,9 +158,24 @@ export async function createCustomerPortalSession(
     try {
         const supabase = await createClient();
 
+        // SECURITY: Authentication required
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
             return { success: false, error: "Unauthorized" };
+        }
+
+        // SECURITY: Rate limiting
+        const rateLimitResult = checkRateLimit("default", user.id);
+        if (!rateLimitResult.success) {
+            return rateLimitExceededError(rateLimitResult);
+        }
+
+        // SECURITY: Validate return URL if provided
+        if (returnUrl) {
+            const urlValidation = validateInput(urlSchema, returnUrl);
+            if (!urlValidation.success) {
+                return { success: false, error: "Invalid return URL" };
+            }
         }
 
         // Get Stripe customer ID
@@ -156,6 +211,7 @@ export async function getStripeCustomer(): Promise<ActionResponse<{ customerId: 
     try {
         const supabase = await createClient();
 
+        // SECURITY: Authentication required
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
             return { success: false, error: "Unauthorized" };

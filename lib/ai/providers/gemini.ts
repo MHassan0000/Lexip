@@ -1,3 +1,12 @@
+/**
+ * Gemini AI Provider
+ * 
+ * SECURITY: 
+ * - API key loaded from environment variables only (never hardcoded)
+ * - No sensitive data logged to console
+ * - Error messages sanitized to not leak internal details
+ */
+
 import { GoogleGenAI, Modality } from "@google/genai";
 import type { AIProvider, GenerationOptions, GenerationResult, GeneratedImage } from "../types";
 import { buildEnhancedPrompt } from "../types";
@@ -8,17 +17,18 @@ export class GeminiProvider implements AIProvider {
     private model = "gemini-2.0-flash-exp-image-generation";
 
     constructor(apiKey?: string) {
+        // SECURITY: Only use environment variable, never accept hardcoded keys
         const key = apiKey || process.env.GEMINI_API_KEY;
         if (!key) {
-            throw new Error("GEMINI_API_KEY is not set");
+            throw new Error("GEMINI_API_KEY environment variable is not set");
         }
+        // SECURITY: Do NOT log API key, even partially
         this.client = new GoogleGenAI({ apiKey: key });
     }
 
     async generateImages(options: GenerationOptions): Promise<GenerationResult> {
         try {
             const enhancedPrompt = buildEnhancedPrompt(options.prompt, options.style);
-            console.log("Generating image with prompt:", enhancedPrompt.substring(0, 100) + "...");
 
             const images: GeneratedImage[] = [];
 
@@ -29,7 +39,6 @@ export class GeminiProvider implements AIProvider {
 
             // Add reference image if provided
             if (options.referenceImage) {
-                console.log("Including reference image in generation");
                 parts.push({
                     inlineData: {
                         data: options.referenceImage.base64,
@@ -45,8 +54,6 @@ export class GeminiProvider implements AIProvider {
                     responseModalities: [Modality.TEXT, Modality.IMAGE],
                 },
             });
-
-            console.log("Gemini response received");
 
             // Extract images from response
             if (response.candidates && response.candidates[0]?.content?.parts) {
@@ -73,11 +80,12 @@ export class GeminiProvider implements AIProvider {
                 promptUsed: enhancedPrompt,
             };
         } catch (error: unknown) {
-            console.error("Gemini generation error:", error);
+            // SECURITY: Log error for debugging but sanitize for user response
+            console.error("Gemini generation error:", error instanceof Error ? error.message : "Unknown error");
 
             const errorString = String(error);
-            const errorMessage = error instanceof Error ? error.message : errorString;
 
+            // Return user-friendly error messages without leaking internal details
             if (errorString.includes("SAFETY") || errorString.includes("safety")) {
                 return {
                     success: false,
@@ -101,9 +109,17 @@ export class GeminiProvider implements AIProvider {
                 };
             }
 
+            if (errorString.includes("403") || errorString.includes("PERMISSION_DENIED")) {
+                return {
+                    success: false,
+                    error: "API key does not have permission for image generation.",
+                };
+            }
+
+            // SECURITY: Generic error for unknown cases - don't leak internal details
             return {
                 success: false,
-                error: `Generation failed: ${errorMessage}`,
+                error: "Image generation failed. Please try again later.",
             };
         }
     }

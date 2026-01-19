@@ -346,7 +346,7 @@ export default function GeneratePage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="sticky top-24 min-h-150 rounded-3xl bg-surface/50 border border-border backdrop-blur-sm p-1 shadow-2xl flex flex-col"
+                            className="sticky top-24 h-[calc(100vh-8rem)] rounded-3xl bg-surface/50 border border-border backdrop-blur-sm p-2 shadow-2xl flex flex-col"
                         >
                             <div className="flex-1 bg-darker/50 rounded-[22px] border border-white/5 relative overflow-hidden group flex flex-col">
                                 {isGenerating ? (

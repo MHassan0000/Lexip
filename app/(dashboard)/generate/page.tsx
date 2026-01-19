@@ -159,8 +159,9 @@ export default function GeneratePage() {
     };
 
     return (
-        <div className="min-h-[calc(100vh-theme(spacing.20))] bg-darker p-4 md:p-6 lg:p-8">
-            <div className="container mx-auto max-w-[1800px] h-full">
+        <div className="min-h-[calc(100vh-(--spacing(20)))]">
+            {/* Content Container */}
+            <div className="w-full h-full min-h-[calc(100vh-(--spacing(20)))] mx-auto max-w-450 p-4 md:p-6 lg:p-8">
                 <div className="grid lg:grid-cols-12 gap-6 h-full items-start">
 
                     {/* LEFT COLUMN: Input / Chat Interface */}
@@ -199,7 +200,7 @@ export default function GeneratePage() {
                                         value={prompt}
                                         onChange={(e) => setPrompt(e.target.value)}
                                         placeholder="Describe your thumbnail..."
-                                        className="w-full min-h-[200px] px-4 py-4 rounded-2xl bg-dark/50 border border-border text-white placeholder:text-text-tertiary focus:outline-none focus:border-primary/50 focus:bg-dark focus:ring-1 focus:ring-primary/20 transition-all resize-none text-base leading-relaxed custom-scrollbar shadow-inner"
+                                        className="w-full min-h-50 px-4 py-4 rounded-2xl bg-dark/50 border border-border text-white placeholder:text-text-tertiary focus:outline-none focus:border-primary/50 focus:bg-dark focus:ring-1 focus:ring-primary/20 transition-all resize-none text-base leading-relaxed custom-scrollbar shadow-inner"
                                     />
                                 </div>
 
@@ -302,7 +303,7 @@ export default function GeneratePage() {
                     </div>
 
                     {/* RIGHT COLUMN: Preview / Result Area - Main Content */}
-                    <div className="lg:col-span-8 xl:col-span-9 relative h-full min-h-[500px] lg:min-h-[calc(100vh-8rem)]">
+                    <div className="lg:col-span-8 xl:col-span-9 relative h-full min-h-125 lg:min-h-[calc(100vh-8rem)]">
                         <motion.div
                             initial={{ opacity: 0, x: 20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -383,7 +384,7 @@ export default function GeneratePage() {
                                             key={i}
                                             onClick={() => setSelectedImage(url)}
                                             className={cn(
-                                                "relative aspect-video h-full rounded-lg overflow-hidden border-2 transition-all flex-shrink-0",
+                                                "relative aspect-video h-full rounded-lg overflow-hidden border-2 transition-all shrink-0",
                                                 selectedImage === url ? "border-primary ring-2 ring-primary/20 scale-105" : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
                                             )}
                                         >

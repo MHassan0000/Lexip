@@ -173,7 +173,7 @@ export function DashboardHome({
                         </div>
                     </div>
 
-                    <div className="w-full h-[300px] min-h-[300px]">
+                    <div className="w-full h-75 min-h-75">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={chartData}>
                                 <defs>
@@ -221,7 +221,7 @@ export function DashboardHome({
                         <Link href="/history" className="text-xs text-primary hover:text-primary-400">View All</Link>
                     </div>
 
-                    <div className="space-y-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+                    <div className="space-y-4 overflow-y-auto max-h-100 pr-2 custom-scrollbar">
                         {recentGenerations.length > 0 ? (
                             recentGenerations.map((gen) => (
                                 <div key={gen.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors group cursor-pointer border border-transparent hover:border-border-bright">
@@ -240,7 +240,7 @@ export function DashboardHome({
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-white truncate max-w-[150px]">
+                                        <p className="text-sm font-medium text-white truncate max-w-37.5">
                                             {gen.prompt}
                                         </p>
                                         <p className="text-xs text-text-tertiary">

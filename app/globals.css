@@ -1,9 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-/* ============================================
-   LEXIP - Dashdark X Premium Theme
-   ============================================ */
 @theme {
   /* Base Colors - Deep Navy/Black Backgrounds */
   --color-darker: #0b0e14; /* Deepest background (Body) */

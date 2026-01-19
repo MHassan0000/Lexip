@@ -18,7 +18,6 @@ import { STYLE_PRESETS } from "@/lib/ai/types";
 import { generateThumbnail, getUsageInfo } from "@/actions/generate";
 import type { ThumbnailGeneration } from "@/types/database";
 import Image from "next/image";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
 
 export default function GeneratePage() {

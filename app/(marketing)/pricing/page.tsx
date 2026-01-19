@@ -119,9 +119,6 @@ export default function PricingPage() {
     );
 }
 
-// =============================================
-// PRICING CARD COMPONENT
-// =============================================
 
 interface PricingCardProps {
     plan: PricingPlan;

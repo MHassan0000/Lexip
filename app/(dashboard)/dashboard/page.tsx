@@ -47,7 +47,7 @@ export default async function DashboardPage() {
         .gte("created_at", sevenDaysAgo.toISOString())
         .order("created_at", { ascending: true });
 
-    // Process chart data
+
     const chartDataMap = new Map<string, number>();
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -57,15 +57,9 @@ export default async function DashboardPage() {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
         const dayName = days[d.getDay()];
-        // Create a unique key for the map to ensure correct counting (YYYY-MM-DD)
         const dateKey = d.toISOString().split('T')[0];
         chartDataMap.set(dateKey, 0);
-
-        // Push placeholder to array, will update values later or rebuild array
-        // actually easier to rebuild array from map keys if we want strict order
     }
-
-    // Count occurrences
     chartRawData?.forEach(item => {
         const dateKey = new Date(item.created_at).toISOString().split('T')[0];
         if (chartDataMap.has(dateKey)) {

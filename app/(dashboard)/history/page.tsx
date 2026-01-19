@@ -14,7 +14,6 @@ export default async function HistoryPage({ searchParams }: HistoryPageProps) {
     const pageSize = 12;
     const offset = (page - 1) * pageSize;
 
-    // Fetch generations with pagination
     const { data: generations, count } = await supabase
         .from("thumbnail_generations")
         .select("*", { count: "exact" })

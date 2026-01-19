@@ -1,19 +1,16 @@
 "use client";
 
-import { useAuth } from "@/hooks/use-auth"; // Using client-side auth for consistent state
-import { redirect } from "next/navigation"; // Not used directly in render but good to keep if needed
+import { useAuth } from "@/hooks/use-auth";
+import { redirect } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { useState, useEffect } from "react";
-import { Menu } from "lucide-react";
+import { useState } from "react";
 
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    // Note: In a real app we might want server-side protection too, 
-    // but for layout structure we'll focus on the UI composition.
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     return (

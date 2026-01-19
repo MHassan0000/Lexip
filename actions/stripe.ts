@@ -80,7 +80,12 @@ export async function createCheckoutSession(
         }
 
         const priceId = plan.stripePriceId[validatedInput.billingPeriod];
-        if (!priceId || priceId.startsWith("price_")) {
+
+        // Check if price ID is missing or is still a placeholder
+        // Real Stripe price IDs look like: price_1OxxxxxLP (alphanumeric, 20+ chars)
+        // Placeholder values are: price_pro_monthly, price_enterprise_yearly, etc.
+        const isPlaceholder = !priceId || priceId.includes("_pro_") || priceId.includes("_enterprise_");
+        if (isPlaceholder) {
             return { success: false, error: "Stripe price not configured. Please set up Stripe price IDs." };
         }
 

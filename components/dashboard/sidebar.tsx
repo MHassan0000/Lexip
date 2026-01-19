@@ -32,9 +32,7 @@ const navItems = [
     { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-const bottomNavItems = [
-    { name: "Billing", href: "/settings/billing", icon: CreditCard },
-];
+const bottomNavItems: { name: string; href: string; icon: any }[] = [];
 
 interface DashboardSidebarProps {
     className?: string; // Allow passing standard className for visibility control

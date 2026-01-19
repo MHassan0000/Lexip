@@ -21,6 +21,7 @@ import { createCustomerPortalSession } from "@/actions/stripe";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import type { Profile, Subscription, UsageLimit } from "@/types/database";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface SettingsViewProps {
     user: SupabaseUser;
@@ -39,7 +40,9 @@ export function SettingsView({
     totalGenerations,
     usage,
 }: SettingsViewProps) {
-    const [activeTab, setActiveTab] = useState<Tab>("profile");
+    const searchParams = useSearchParams();
+    const initialTab = searchParams.get("tab") as Tab || "profile";
+    const [activeTab, setActiveTab] = useState<Tab>(initialTab);
     const [isPortalLoading, setIsPortalLoading] = useState(false);
 
     const tabs = [
@@ -87,8 +90,8 @@ export function SettingsView({
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all flex-1 justify-center ${activeTab === tab.id
-                                ? "bg-primary text-white"
-                                : "text-text-secondary hover:text-white"
+                            ? "bg-primary text-white"
+                            : "text-text-secondary hover:text-white"
                             }`}
                     >
                         <tab.icon className="w-4 h-4" />
@@ -328,10 +331,10 @@ function UsageTab({
                             animate={{ width: `${usagePercent}%` }}
                             transition={{ duration: 0.5 }}
                             className={`h-full rounded-full ${usagePercent >= 90
-                                    ? "bg-red-500"
-                                    : usagePercent >= 70
-                                        ? "bg-yellow-500"
-                                        : "bg-linear-to-r from-primary to-accent"
+                                ? "bg-red-500"
+                                : usagePercent >= 70
+                                    ? "bg-yellow-500"
+                                    : "bg-linear-to-r from-primary to-accent"
                                 }`}
                         />
                     </div>

@@ -159,7 +159,7 @@ export function validateInput<T>(
     } catch (error) {
         if (error instanceof z.ZodError) {
             // Return first error message for user-friendly feedback
-            const firstError = error.errors[0];
+            const firstError = error.issues[0];
             const path = firstError.path.join('.');
             const message = path
                 ? `${path}: ${firstError.message}`

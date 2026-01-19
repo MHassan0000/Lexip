@@ -2,105 +2,97 @@
 @import "tw-animate-css";
 
 /* ============================================
-   LEXIP - Dark RPG Theme (Optimized)
+   LEXIP - Dashdark X Premium Theme
    ============================================ */
 @theme {
-  /* Base Colors - Deep Dark Backgrounds */
-  --color-darker: #0a0a0f;
-  --color-dark: #0f0f1a;
-  --color-surface: #141420;
-  --color-surface-elevated: #1a1a2e;
-  --color-border: #1e1e38;
-  --color-border-bright: #2a2a4a;
+  /* Base Colors - Deep Navy/Black Backgrounds */
+  --color-darker: #0b0e14; /* Deepest background (Body) */
+  --color-dark: #151a25; /* Secondary background (Sidebar/Header) */
+  --color-surface: #1e2532; /* Surface for Cards */
+  --color-surface-elevated: #2a3344; /* Hover/Dropdowns */
 
-  /* Primary - Vibrant Purple */
-  --color-primary-50: #f5f3ff;
-  --color-primary-100: #ede9fe;
-  --color-primary-200: #ddd6fe;
-  --color-primary-300: #c4b5fd;
-  --color-primary-400: #a78bfa;
-  --color-primary-500: #8b5cf6;
-  --color-primary-600: #7c3aed;
-  --color-primary-700: #6d28d9;
-  --color-primary-800: #5b21b6;
-  --color-primary-900: #4c1d95;
+  /* Borders */
+  --color-border: #2a3344;
+  --color-border-bright: #3b475b;
 
-  /* Accent - Bright Blue/Cyan */
-  --color-accent-50: #eff6ff;
-  --color-accent-100: #dbeafe;
-  --color-accent-200: #bfdbfe;
-  --color-accent-300: #93c5fd;
-  --color-accent-400: #60a5fa;
-  --color-accent-500: #3b82f6;
-  --color-accent-600: #2563eb;
-  --color-accent-700: #1d4ed8;
-  --color-accent-800: #1e40af;
-  --color-accent-900: #1e3a8a;
+  /* Primary - Vivid Purple/Indigo */
+  --color-primary-50: #eef2ff;
+  --color-primary-100: #e0e7ff;
+  --color-primary-200: #c7d2fe;
+  --color-primary-300: #a5b4fc;
+  --color-primary-400: #818cf8;
+  --color-primary-500: #6366f1;
+  --color-primary-600: #4f46e5;
+  --color-primary: #6366f1; /* Default Primary */
+  --color-primary-700: #4338ca;
+  --color-primary-800: #3730a3;
+  --color-primary-900: #312e81;
+
+  /* Accent - Neon Cyan for "Tech" feel */
+  --color-accent-50: #ecfeff;
+  --color-accent-100: #cffafe;
+  --color-accent-200: #a5f3fc;
+  --color-accent-300: #67e8f9;
+  --color-accent-400: #22d3ee;
+  --color-accent: #06b6d4; /* Default Accent */
+  --color-accent-500: #06b6d4;
+  --color-accent-600: #0891b2;
+  --color-accent-700: #0e7490;
+  --color-accent-800: #155e75;
+  --color-accent-900: #164e63;
 
   /* Status Colors */
   --color-success: #10b981;
-  --color-success-dark: #059669;
+  --color-success-bg: rgba(16, 185, 129, 0.1);
   --color-error: #ef4444;
-  --color-error-dark: #dc2626;
+  --color-error-bg: rgba(239, 68, 68, 0.1);
   --color-warning: #f59e0b;
-  --color-warning-dark: #d97706;
+  --color-warning-bg: rgba(245, 158, 11, 0.1);
+  --color-info: #3b82f6;
+  --color-info-bg: rgba(59, 130, 246, 0.1);
 
   /* Text Colors */
   --color-text-primary: #ffffff;
-  --color-text-secondary: #a1a1aa;
-  --color-text-tertiary: #71717a;
-  --color-text-disabled: #52525b;
+  --color-text-secondary: #94a3b8; /* Slate-400 */
+  --color-text-tertiary: #64748b; /* Slate-500 */
+  --color-text-disabled: #475569;
 
-  /* Gradient Presets */
-  --gradient-primary: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%);
-  --gradient-primary-hover: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%);
-  --gradient-accent: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-  --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  --gradient-dark: linear-gradient(180deg, #0a0a0f 0%, #141420 100%);
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  --gradient-accent: linear-gradient(135deg, #22d3ee 0%, #06b6d4 100%);
+  --gradient-glow: radial-gradient(
+    circle at center,
+    rgba(99, 102, 241, 0.15) 0%,
+    transparent 70%
+  );
 
   /* Border Radius */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
-  --radius-2xl: 1.5rem;
-  --radius-full: 9999px;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  /* Shadows - Colorful Glows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
+  --shadow-glow-accent: 0 0 20px rgba(6, 182, 212, 0.3);
 
-  /* Glow Effects */
-  --glow-primary: 0 0 30px rgba(139, 92, 246, 0.5);
-  --glow-primary-strong: 0 0 40px rgba(139, 92, 246, 0.7);
-  --glow-accent: 0 0 30px rgba(59, 130, 246, 0.5);
-  --glow-accent-strong: 0 0 40px rgba(59, 130, 246, 0.7);
-  --glow-success: 0 0 30px rgba(16, 185, 129, 0.5);
-  --glow-error: 0 0 30px rgba(239, 68, 68, 0.5);
-
-  /* Transitions */
+  /* Animations */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-smooth: 500ms cubic-bezier(0.25, 0.1, 0.25, 1);
+  --transition-bounce: 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
   /* Typography */
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
   --font-display: var(--font-space-grotesk), system-ui, sans-serif;
 }
 
-/* ============================================
-   Base Styles
-   ============================================ */
-
 @layer base {
   *,
-  *::before,
-  *::after {
+  ::before,
+  ::after {
     border-color: var(--color-border);
   }
 
@@ -111,55 +103,15 @@
   }
 }
 
-/* ============================================
-   Custom Scrollbar
-   ============================================ */
-
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-border-bright);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-600);
-}
-
-/* ============================================
-   Utility Classes
-   ============================================ */
-
 @layer utilities {
-  .glass {
-    @apply border border-white/10;
-    background: rgba(20, 20, 32, 0.6);
+  .glass-panel {
+    background: rgba(30, 37, 50, 0.7);
     backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
 
-  .glass-strong {
-    @apply border border-white/10;
-    background: rgba(20, 20, 32, 0.85);
-    backdrop-filter: blur(20px);
-  }
-
-  .gradient-text {
-    @apply bg-clip-text text-transparent;
-    background-image: var(--gradient-primary);
-  }
-
-  .glow-primary {
-    box-shadow: var(--glow-primary);
-  }
-
-  .glow-accent {
-    box-shadow: var(--glow-accent);
+  .glass-panel-hover:hover {
+    background: rgba(42, 51, 68, 0.8);
+    border-color: rgba(99, 102, 241, 0.3);
   }
 }

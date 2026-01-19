@@ -6,16 +6,26 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import {
     Wand2,
-    TrendingUp,
     Zap,
-    Clock,
-    ArrowRight,
-    Plus,
     Crown,
+    TrendingUp,
+    MoreHorizontal,
+    ArrowUpRight,
+    Calendar,
+    Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { User } from "@supabase/supabase-js";
 import type { ThumbnailGeneration, Subscription, UsageLimit } from "@/types/database";
+import {
+    AreaChart,
+    Area,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer
+} from 'recharts';
 
 interface DashboardHomeProps {
     user: User;
@@ -24,6 +34,17 @@ interface DashboardHomeProps {
     totalGenerations: number;
     usage: UsageLimit | null;
 }
+
+// Mock data for the chart - in production this would come from the database
+const data = [
+    { name: 'Mon', value: 4 },
+    { name: 'Tue', value: 7 },
+    { name: 'Wed', value: 5 },
+    { name: 'Thu', value: 12 },
+    { name: 'Fri', value: 8 },
+    { name: 'Sat', value: 15 },
+    { name: 'Sun', value: 10 },
+];
 
 export function DashboardHome({
     user,
@@ -41,166 +62,210 @@ export function DashboardHome({
         {
             label: "Total Generations",
             value: totalGenerations,
+            change: "+12.5%",
+            trend: "up",
             icon: Wand2,
             color: "text-primary",
-            bgColor: "bg-primary/20",
+            bg: "bg-primary/10",
+            border: "border-primary/20"
         },
         {
-            label: "Remaining Today",
+            label: "Credits Remaining",
             value: remainingToday,
+            subtext: "Reset at midnight",
             icon: Zap,
-            color: "text-yellow-500",
-            bgColor: "bg-yellow-500/20",
+            color: "text-[#F59E0B]",
+            bg: "bg-[#F59E0B]/10",
+            border: "border-[#F59E0B]/20"
         },
         {
-            label: "Current Plan",
+            label: "Active Plan",
             value: plan.charAt(0).toUpperCase() + plan.slice(1),
+            action: "Manage",
             icon: Crown,
             color: "text-accent",
-            bgColor: "bg-accent/20",
+            bg: "bg-accent/10",
+            border: "border-accent/20"
         },
     ];
 
     return (
-        <div className="space-y-8">
-            {/* Welcome Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="space-y-6">
+            {/* Top Row: Welcome & Main Actions */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-white font-(family-name:--font-space-grotesk)">
-                        Welcome back, {user.email?.split("@")[0]}!
+                    <h1 className="text-3xl font-bold text-white font-display tracking-tight">
+                        Dashboard
                     </h1>
                     <p className="text-text-secondary mt-1">
-                        Here's what's happening with your thumbnail generations
+                        Overview of your creative activity.
                     </p>
                 </div>
-                <Link href="/generate">
-                    <Button className="bg-primary hover:bg-primary/90 text-white">
-                        <Plus className="w-4 h-4 mr-2" />
-                        New Generation
+                <div className="flex items-center gap-3">
+                    <Button variant="outline" className="border-border-bright text-text-secondary hover:text-white hover:bg-surface-elevated">
+                        <Download className="w-4 h-4 mr-2" />
+                        Export Data
                     </Button>
-                </Link>
+                    <Link href="/generate">
+                        <Button className="bg-primary hover:bg-primary/90 text-white shadow-glow">
+                            <Wand2 className="w-4 h-4 mr-2" />
+                            Create New
+                        </Button>
+                    </Link>
+                </div>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat, index) => (
                     <motion.div
                         key={stat.label}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="p-6 rounded-2xl bg-surface border border-border"
+                        className={`p-6 rounded-2xl bg-surface border ${stat.border} relative overflow-hidden group hover:-translate-y-1 transition-transform duration-300`}
                     >
-                        <div className="flex items-center gap-4">
-                            <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
+                        {/* Glow effect */}
+                        <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full ${stat.bg} blur-3xl opacity-50 group-hover:opacity-100 transition-opacity`} />
+
+                        <div className="flex justify-between items-start relative z-10">
+                            <div className={`p-3 rounded-xl ${stat.bg}`}>
                                 <stat.icon className={`w-6 h-6 ${stat.color}`} />
                             </div>
-                            <div>
-                                <p className="text-text-tertiary text-sm">{stat.label}</p>
-                                <p className="text-2xl font-bold text-white">{stat.value}</p>
-                            </div>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-text-tertiary hover:text-white">
+                                <MoreHorizontal className="w-4 h-4" />
+                            </Button>
+                        </div>
+
+                        <div className="mt-6 relative z-10">
+                            <h3 className="text-3xl font-bold text-white font-display">{stat.value}</h3>
+                            <p className="text-sm text-text-secondary mt-1 flex items-center gap-2">
+                                {stat.label}
+                                {stat.change && (
+                                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 flex items-center">
+                                        <TrendingUp className="w-3 h-3 mr-1" />
+                                        {stat.change}
+                                    </span>
+                                )}
+                            </p>
+                            {stat.subtext && <p className="text-xs text-text-tertiary mt-2">{stat.subtext}</p>}
                         </div>
                     </motion.div>
                 ))}
             </div>
 
-            {/* Usage Progress */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="p-6 rounded-2xl bg-surface border border-border"
-            >
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-bold text-white">Today's Usage</h2>
-                    <span className="text-sm text-text-secondary">
-                        {usedToday} / {limitToday} generations
-                    </span>
-                </div>
-                <div className="h-3 bg-dark rounded-full overflow-hidden">
-                    <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, (usedToday / limitToday) * 100)}%` }}
-                        transition={{ duration: 0.5, delay: 0.5 }}
-                        className="h-full bg-linear-to-r from-primary to-accent rounded-full"
-                    />
-                </div>
-                {plan === "free" && remainingToday < 3 && (
-                    <div className="mt-4 flex items-center justify-between p-4 rounded-xl bg-primary/10 border border-primary/30">
-                        <div className="flex items-center gap-3">
-                            <TrendingUp className="w-5 h-5 text-primary" />
-                            <span className="text-sm text-white">
-                                Running low on generations? Upgrade for more!
-                            </span>
+            {/* Main Content Grid: Chart & Recent */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Chart Section */}
+                <div className="lg:col-span-2 p-6 rounded-2xl bg-surface border border-border flex flex-col">
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h3 className="text-lg font-bold text-white">Activity Info</h3>
+                            <p className="text-sm text-text-secondary">Generations over time</p>
                         </div>
-                        <Link href="/pricing">
-                            <Button size="sm" className="bg-primary hover:bg-primary/90 text-white">
-                                Upgrade
-                            </Button>
-                        </Link>
+                        <div className="flex items-center gap-2">
+                            <select className="bg-dark border border-border text-xs text-text-secondary rounded-lg px-3 py-1.5 outline-none focus:border-primary">
+                                <option>Last 7 days</option>
+                                <option>Last 30 days</option>
+                            </select>
+                        </div>
                     </div>
-                )}
-            </motion.div>
 
-            {/* Recent Generations */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-            >
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-lg font-bold text-white">Recent Generations</h2>
-                    <Link href="/history" className="text-sm text-primary hover:underline flex items-center gap-1">
-                        View all <ArrowRight className="w-4 h-4" />
-                    </Link>
+                    <div className="flex-1 h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={data}>
+                                <defs>
+                                    <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#6366F1" stopOpacity={0} />
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="#2A3344" vertical={false} />
+                                <XAxis
+                                    dataKey="name"
+                                    stroke="#64748B"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                />
+                                <YAxis
+                                    stroke="#64748B"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#1E2532', borderColor: '#3B475B', borderRadius: '8px', color: '#fff' }}
+                                    itemStyle={{ color: '#fff' }}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#6366F1"
+                                    strokeWidth={3}
+                                    fillOpacity={1}
+                                    fill="url(#colorValue)"
+                                />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
                 </div>
 
-                {recentGenerations.length > 0 ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                        {recentGenerations.map((gen, index) => (
-                            <motion.div
-                                key={gen.id}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.5 + index * 0.05 }}
-                                className="group relative aspect-video rounded-xl overflow-hidden bg-dark border border-border hover:border-primary/50 transition-colors cursor-pointer"
-                            >
-                                {gen.image_urls && gen.image_urls[0] ? (
-                                    <Image
-                                        src={gen.image_urls[0]}
-                                        alt={gen.prompt}
-                                        fill
-                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">
-                                        <Wand2 className="w-8 h-8 text-text-tertiary" />
-                                    </div>
-                                )}
-                                <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <div className="absolute bottom-2 left-2 right-2">
-                                        <p className="text-xs text-white truncate">{gen.prompt}</p>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
+                {/* Right Column / Recent */}
+                <div className="p-6 rounded-2xl bg-surface border border-border flex flex-col">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-white">Recent Files</h3>
+                        <Link href="/history" className="text-xs text-primary hover:text-primary-400">View All</Link>
                     </div>
-                ) : (
-                    <div className="p-12 rounded-2xl bg-surface border border-border text-center">
-                        <Wand2 className="w-12 h-12 text-text-tertiary mx-auto mb-4" />
-                        <h3 className="text-lg font-medium text-white mb-2">No generations yet</h3>
-                        <p className="text-text-secondary mb-4">
-                            Create your first thumbnail to get started
-                        </p>
+
+                    <div className="space-y-4 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
+                        {recentGenerations.length > 0 ? (
+                            recentGenerations.map((gen) => (
+                                <div key={gen.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors group cursor-pointer border border-transparent hover:border-border-bright">
+                                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-dark shrink-0">
+                                        {gen.image_urls && gen.image_urls[0] ? (
+                                            <Image
+                                                src={gen.image_urls[0]}
+                                                alt="Thumbnail"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-text-tertiary">
+                                                <Wand2 className="w-4 h-4" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-white truncate max-w-[150px]">
+                                            {gen.prompt}
+                                        </p>
+                                        <p className="text-xs text-text-tertiary">
+                                            {new Date(gen.created_at).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <ArrowUpRight className="w-4 h-4 text-text-tertiary group-hover:text-white transition-colors" />
+                                </div>
+                            ))
+                        ) : (
+                            <div className="py-10 text-center">
+                                <p className="text-sm text-text-secondary">No files created yet.</p>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="mt-auto pt-4">
                         <Link href="/generate">
-                            <Button className="bg-primary hover:bg-primary/90 text-white">
-                                <Plus className="w-4 h-4 mr-2" />
-                                Generate Thumbnail
+                            <Button className="w-full bg-darker border border-border text-white hover:bg-surface-elevated">
+                                <Wand2 className="w-4 h-4 mr-2 text-primary" />
+                                Generate New
                             </Button>
                         </Link>
                     </div>
-                )}
-            </motion.div>
+                </div>
+            </div>
         </div>
     );
 }
+

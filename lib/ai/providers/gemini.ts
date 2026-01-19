@@ -80,9 +80,6 @@ export class GeminiProvider implements AIProvider {
                 promptUsed: enhancedPrompt,
             };
         } catch (error: unknown) {
-            // SECURITY: Log error for debugging but sanitize for user response
-            console.error("Gemini generation error:", error instanceof Error ? error.message : "Unknown error");
-
             const errorString = String(error);
 
             // Return user-friendly error messages without leaking internal details

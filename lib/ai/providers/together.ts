@@ -11,6 +11,7 @@ export class TogetherProvider implements AIProvider {
     private apiKey: string;
 
     constructor() {
+        // SECURITY: API key loaded from environment only
         this.apiKey = process.env.TOGETHER_API_KEY || "";
     }
 
@@ -18,7 +19,7 @@ export class TogetherProvider implements AIProvider {
         if (!this.apiKey) {
             return {
                 success: false,
-                error: "Together.ai API key not configured. Add TOGETHER_API_KEY to your environment.",
+                error: "Image generation service not configured. Please contact support.",
             };
         }
 
@@ -26,11 +27,8 @@ export class TogetherProvider implements AIProvider {
             const count = options.count || 1;
             const enhancedPrompt = buildEnhancedPrompt(options.prompt, options.style);
 
-            console.log(`[Together] Generating ${count} image(s)...`);
-
             const images: GeneratedImage[] = [];
 
-            // Together.ai is fast - usually under 10 seconds
             for (let i = 0; i < count; i++) {
                 try {
                     const response = await fetch(TOGETHER_API_URL, {
@@ -40,19 +38,18 @@ export class TogetherProvider implements AIProvider {
                             "Content-Type": "application/json",
                         },
                         body: JSON.stringify({
-                            model: "black-forest-labs/FLUX.1-schnell-Free", // Fast, free model
+                            model: "black-forest-labs/FLUX.1-schnell-Free",
                             prompt: enhancedPrompt,
                             width: 1280,
                             height: 720,
-                            steps: 4, // Schnell is optimized for 4 steps
+                            steps: 4,
                             n: 1,
                             response_format: "b64_json",
                         }),
                     });
 
                     if (!response.ok) {
-                        const errorData = await response.text();
-                        console.error(`[Together] API error: ${response.status} - ${errorData}`);
+                        // Don't log error details that might contain sensitive info
                         continue;
                     }
 
@@ -65,17 +62,16 @@ export class TogetherProvider implements AIProvider {
                             width: 1280,
                             height: 720,
                         });
-                        console.log(`[Together] Generated image ${i + 1}/${count}`);
                     }
-                } catch (imageError) {
-                    console.error(`[Together] Error generating image ${i + 1}:`, imageError);
+                } catch {
+                    // Silent fail for individual image errors
                 }
             }
 
             if (images.length === 0) {
                 return {
                     success: false,
-                    error: "Failed to generate images with Together.ai",
+                    error: "Failed to generate images. Please try again.",
                 };
             }
 
@@ -84,11 +80,10 @@ export class TogetherProvider implements AIProvider {
                 images,
                 promptUsed: enhancedPrompt,
             };
-        } catch (error) {
-            console.error("[Together] Generation error:", error);
+        } catch {
             return {
                 success: false,
-                error: error instanceof Error ? error.message : "Image generation failed",
+                error: "Image generation failed. Please try again later.",
             };
         }
     }

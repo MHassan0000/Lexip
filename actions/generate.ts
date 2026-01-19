@@ -107,8 +107,8 @@ export async function generateThumbnail(
             return { success: false, error: "Failed to create generation record" };
         }
 
-        // Generate images using AI
-        const provider = getAIProvider("gemini");
+        // Generate images using AI (uses default provider - currently Pollinations)
+        const provider = getAIProvider();
         const result = await provider.generateImages({
             prompt: validatedInput.prompt,
             style,

@@ -3,13 +3,17 @@
 
 import type { AIProvider } from "./types";
 import { GeminiProvider } from "./providers/gemini";
+import { PollinationsProvider } from "./providers/pollinations";
 
-export type AIProviderType = "gemini"; // Add more providers here as needed
+export type AIProviderType = "gemini" | "pollinations";
 
 let cachedProvider: AIProvider | null = null;
 let cachedProviderType: AIProviderType | null = null;
 
-export function getAIProvider(providerType: AIProviderType = "gemini"): AIProvider {
+// Default to pollinations (free, no API key needed)
+const DEFAULT_PROVIDER: AIProviderType = "pollinations";
+
+export function getAIProvider(providerType: AIProviderType = DEFAULT_PROVIDER): AIProvider {
     // Return cached provider if same type
     if (cachedProvider && cachedProviderType === providerType) {
         return cachedProvider;
@@ -19,6 +23,9 @@ export function getAIProvider(providerType: AIProviderType = "gemini"): AIProvid
     switch (providerType) {
         case "gemini":
             cachedProvider = new GeminiProvider();
+            break;
+        case "pollinations":
+            cachedProvider = new PollinationsProvider();
             break;
         default:
             throw new Error(`Unknown AI provider: ${providerType}`);

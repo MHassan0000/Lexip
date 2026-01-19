@@ -19,6 +19,7 @@ import { generateThumbnail, getUsageInfo } from "@/actions/generate";
 import type { ThumbnailGeneration } from "@/types/database";
 import Image from "next/image";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export default function GeneratePage() {
     const [prompt, setPrompt] = useState("");
@@ -33,6 +34,7 @@ export default function GeneratePage() {
     const [referenceImage, setReferenceImage] = useState<{ base64: string; mimeType: string; preview: string } | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // Fetch usage info on mount
     useEffect(() => {
@@ -44,6 +46,14 @@ export default function GeneratePage() {
         }
         fetchUsage();
     }, [generation]);
+
+    // Auto-resize textarea
+    useEffect(() => {
+        if (textareaRef.current) {
+            textareaRef.current.style.height = "auto";
+            textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+        }
+    }, [prompt]);
 
     const handleFileSelect = (file: File) => {
         if (!file.type.startsWith("image/")) {
@@ -59,7 +69,7 @@ export default function GeneratePage() {
         const reader = new FileReader();
         reader.onload = (e) => {
             const base64Full = e.target?.result as string;
-            const base64Data = base64Full.split(",")[1]; // Remove data:image/...;base64, prefix
+            const base64Data = base64Full.split(",")[1];
             setReferenceImage({
                 base64: base64Data,
                 mimeType: file.type,
@@ -149,279 +159,242 @@ export default function GeneratePage() {
     };
 
     return (
-        <div className="min-h-screen bg-darker pt-4 pb-12">
-            <div className="container mx-auto max-w-7xl">
-                {/* Visual Header */}
-                <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-12 text-center"
-                >
-                    <div className="inline-flex items-center justify-center p-3 rounded-2xl bg-primary/10 mb-4 ring-1 ring-primary/30">
-                        <Wand2 className="w-8 h-8 text-primary" />
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-white font-display mb-3 tracking-tight">
-                        Generate Thumbnail
-                    </h1>
-                    <p className="text-text-secondary max-w-2xl mx-auto text-lg">
-                        Transform your ideas into viral thumbnails with our advanced AI engine.
-                    </p>
-                </motion.div>
+        <div className="min-h-[calc(100vh-theme(spacing.20))] bg-darker p-4 md:p-6 lg:p-8">
+            <div className="container mx-auto max-w-[1800px] h-full">
+                <div className="grid lg:grid-cols-12 gap-6 h-full items-start">
 
-                <div className="grid lg:grid-cols-12 gap-8 items-start">
-                    {/* Left Column - Input Controls */}
-                    <div className="lg:col-span-4 space-y-6">
-                        {/* Usage Card */}
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="p-5 rounded-2xl bg-surface border border-border overflow-hidden relative"
-                        >
-                            {/* Background decoration */}
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+                    {/* LEFT COLUMN: Input / Chat Interface */}
+                    <div className="lg:col-span-4 xl:col-span-3 flex flex-col gap-6 lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto custom-scrollbar pr-2">
+                        {/* Header Section */}
+                        <div className="flex items-center justify-between shrink-0">
+                            <div>
+                                <h1 className="text-xl font-bold text-white font-display flex items-center gap-2">
+                                    <Wand2 className="w-5 h-5 text-primary" />
+                                    Create
+                                </h1>
+                            </div>
 
-                            <div className="flex items-center justify-between relative z-10">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-yellow-500/10">
-                                        <Zap className="w-5 h-5 text-yellow-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-text-secondary">Daily Credits</p>
-                                        <p className="text-white font-bold text-lg">
-                                            {usage ? usage.remaining : "..."} <span className="text-text-tertiary text-sm font-normal">left</span>
-                                        </p>
-                                    </div>
+                            {/* Usage Badge */}
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface border border-border">
+                                <Zap className="w-3.5 h-3.5 text-yellow-500" />
+                                <span className="text-sm font-medium text-white">{usage?.remaining || 0}</span>
+                            </div>
+                        </div>
+
+                        {/* Main Input Card - Chatbot Style */}
+                        <div className="flex flex-col gap-4">
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="bg-surface rounded-3xl border border-border p-5 shadow-xl flex flex-col gap-5 relative overflow-hidden"
+                            >
+                                {/* Background Glow */}
+                                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+
+                                {/* Text Area */}
+                                <div className="space-y-2 relative z-10 w-full">
+                                    <label className="text-xs font-semibold text-text-tertiary uppercase tracking-wider">Prompt</label>
+                                    <textarea
+                                        ref={textareaRef}
+                                        value={prompt}
+                                        onChange={(e) => setPrompt(e.target.value)}
+                                        placeholder="Describe your thumbnail..."
+                                        className="w-full min-h-[200px] px-4 py-4 rounded-2xl bg-dark/50 border border-border text-white placeholder:text-text-tertiary focus:outline-none focus:border-primary/50 focus:bg-dark focus:ring-1 focus:ring-primary/20 transition-all resize-none text-base leading-relaxed custom-scrollbar shadow-inner"
+                                    />
                                 </div>
-                                {usage?.plan === "free" && (
-                                    <Link href="/pricing">
-                                        <Button size="sm" variant="outline" className="text-xs border-primary/30 text-primary hover:bg-primary/10">
-                                            Upgrade
-                                        </Button>
-                                    </Link>
-                                )}
-                            </div>
-                        </motion.div>
 
-                        <motion.div
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: 0.1 }}
-                            className="bg-surface rounded-2xl border border-border p-6 space-y-6"
-                        >
-                            {/* Prompt Input */}
-                            <div className="space-y-3">
-                                <label className="text-sm font-medium text-white flex justify-between">
-                                    Prompt
-                                    <span className="text-xs text-text-tertiary">Describe specifically</span>
-                                </label>
-                                <textarea
-                                    value={prompt}
-                                    onChange={(e) => setPrompt(e.target.value)}
-                                    placeholder="e.g., A shocked YouTube creator looking at a floating holographic interface, cyberpunk city background, vibrant neon colors, high contrast, 8k resolution..."
-                                    className="w-full h-32 px-4 py-3 rounded-xl bg-dark border border-border text-white placeholder:text-text-tertiary resize-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 transition-all custom-scrollbar"
-                                />
-                            </div>
+                                {/* Controls Row */}
+                                <div className="flex flex-col gap-5 relative z-10">
 
-                            {/* Reference Image */}
-                            <div className="space-y-3">
-                                <label className="text-sm font-medium text-white flex items-center gap-2">
-                                    <ImageIcon className="w-4 h-4" />
-                                    Reference Image <span className="text-text-tertiary font-normal text-xs">(optional)</span>
-                                </label>
+                                    {/* Style Selector */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-semibold text-text-tertiary uppercase tracking-wider">Style</label>
+                                        <div className="grid grid-cols-2 gap-2">
+                                            {STYLE_PRESETS.map((style) => (
+                                                <button
+                                                    key={style.id}
+                                                    onClick={() => setSelectedStyle(selectedStyle === style.id ? "" : style.id)}
+                                                    className={cn(
+                                                        "px-3 py-2.5 rounded-xl text-xs font-medium border transition-all text-center truncate shadow-sm",
+                                                        selectedStyle === style.id
+                                                            ? "bg-primary/20 border-primary text-white ring-1 ring-primary/30"
+                                                            : "bg-dark border-border text-text-secondary hover:bg-surface-elevated hover:text-white"
+                                                    )}
+                                                >
+                                                    {style.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
 
-                                {referenceImage ? (
-                                    <div className="relative p-3 rounded-xl bg-dark border border-border group overflow-hidden">
-                                        <div className="flex items-center gap-3">
-                                            <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-surface">
-                                                <Image
-                                                    src={referenceImage.preview}
-                                                    alt="Reference"
-                                                    fill
-                                                    className="object-cover"
-                                                />
+                                    {/* Image Upload */}
+                                    <div className="space-y-2">
+                                        <label className="text-xs font-semibold text-text-tertiary uppercase tracking-wider flex justify-between">
+                                            Reference
+                                            <span className="font-normal normal-case text-text-tertiary/70">(Optional)</span>
+                                        </label>
+
+                                        {referenceImage ? (
+                                            <div className="relative p-2 rounded-xl bg-dark border border-border flex items-center gap-3 group">
+                                                <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0">
+                                                    <Image src={referenceImage.preview} alt="Ref" fill className="object-cover" />
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs text-white truncate">Image Attached</p>
+                                                    <p className="text-[10px] text-primary">Structure reference</p>
+                                                </div>
+                                                <button onClick={removeReferenceImage} className="p-1.5 hover:bg-white/10 rounded-lg text-text-secondary hover:text-red-400 transition-colors">
+                                                    <X className="w-4 h-4" />
+                                                </button>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-sm text-white font-medium truncate">Uploaded Image</p>
-                                                <p className="text-xs text-text-tertiary">Using as structure ref</p>
-                                            </div>
-                                            <button
-                                                onClick={removeReferenceImage}
-                                                className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                                        ) : (
+                                            <div
+                                                onClick={() => fileInputRef.current?.click()}
+                                                onDrop={handleDrop}
+                                                onDragOver={handleDragOver}
+                                                onDragLeave={handleDragLeave}
+                                                className={cn(
+                                                    "border-2 border-dashed rounded-xl p-4 transition-all cursor-pointer flex items-center justify-center gap-2 h-14",
+                                                    isDragging ? "border-primary bg-primary/5" : "border-border/50 hover:border-primary/50 hover:bg-dark"
+                                                )}
                                             >
-                                                <X className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div
-                                        onDrop={handleDrop}
-                                        onDragOver={handleDragOver}
-                                        onDragLeave={handleDragLeave}
-                                        onClick={() => fileInputRef.current?.click()}
-                                        className={`p-4 rounded-xl border-2 border-dashed transition-all cursor-pointer text-center group ${isDragging
-                                            ? "border-primary bg-primary/5"
-                                            : "border-border hover:border-primary/50 hover:bg-dark"
-                                            }`}
-                                    >
-                                        <div className="flex flex-col items-center gap-2 py-2">
-                                            <div className="p-2 rounded-full bg-surface group-hover:bg-primary/10 transition-colors">
-                                                <Upload className={`w-5 h-5 ${isDragging ? "text-primary" : "text-text-tertiary group-hover:text-primary"}`} />
+                                                <Upload className="w-4 h-4 text-text-tertiary" />
+                                                <span className="text-xs text-text-secondary">Upload Image</span>
                                             </div>
-                                            <p className="text-xs text-text-secondary">
-                                                <span className="text-primary font-medium hover:underline">Click to upload</span> or drag image
-                                            </p>
-                                        </div>
+                                        )}
+                                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInputChange} className="hidden" />
                                     </div>
-                                )}
-                                <input
-                                    ref={fileInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleFileInputChange}
-                                    className="hidden"
-                                />
-                            </div>
 
-                            {/* Style Selection */}
-                            <div className="space-y-3">
-                                <label className="text-sm font-medium text-white">Style Preset</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {STYLE_PRESETS.map((style) => (
-                                        <motion.button
-                                            key={style.id}
-                                            whileTap={{ scale: 0.98 }}
-                                            onClick={() => setSelectedStyle(selectedStyle === style.id ? "" : style.id)}
-                                            className={`p-3 rounded-xl border text-left transition-all ${selectedStyle === style.id
-                                                ? "bg-primary/20 border-primary text-white ring-1 ring-primary/50"
-                                                : "bg-dark border-border text-text-secondary hover:border-border-bright hover:bg-surface-elevated"
-                                                }`}
-                                        >
-                                            <span className="text-sm font-medium block mb-1">{style.name}</span>
-                                        </motion.button>
-                                    ))}
                                 </div>
-                            </div>
 
-                            {/* Error Message */}
-                            <AnimatePresence>
-                                {error && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex gap-2"
-                                    >
-                                        <AlertCircle className="w-4 h-4 text-red-400 mt-0.5" />
-                                        <p className="text-xs text-red-300">{error}</p>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-
-                            {/* Generate Button */}
-                            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                                <Button
-                                    onClick={handleGenerate}
-                                    disabled={isGenerating || !prompt.trim() || (usage?.remaining === 0)}
-                                    className="w-full h-14 bg-linear-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary text-white text-lg font-bold rounded-xl shadow-glow transition-all"
-                                >
-                                    {isGenerating ? (
-                                        <div className="flex items-center gap-2">
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                            <span>Creating Magic...</span>
-                                        </div>
-                                    ) : (
-                                        <div className="flex items-center gap-2">
-                                            <Sparkles className="w-5 h-5 fill-white/20" />
-                                            <span>Generate Thumbnail</span>
-                                        </div>
+                                {/* Error Display */}
+                                <AnimatePresence>
+                                    {error && (
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="text-red-400 text-xs flex items-center gap-1.5 bg-red-400/10 p-3 rounded-lg border border-red-400/20">
+                                            <AlertCircle className="w-3.5 h-3.5" />
+                                            {error}
+                                        </motion.div>
                                     )}
-                                </Button>
+                                </AnimatePresence>
+
+                                {/* Generate Action */}
+                                <div className="mt-2">
+                                    <Button
+                                        onClick={handleGenerate}
+                                        disabled={isGenerating || !prompt.trim() || (usage?.remaining === 0)}
+                                        className="w-full h-14 text-base font-bold rounded-xl bg-linear-to-r from-primary to-accent hover:opacity-90 shadow-glow transition-all"
+                                    >
+                                        {isGenerating ? (
+                                            <span className="flex items-center gap-2">
+                                                <Loader2 className="w-5 h-5 animate-spin" />
+                                                Visualizing...
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-2">
+                                                <Sparkles className="w-5 h-5 fill-white" />
+                                                Generate
+                                            </span>
+                                        )}
+                                    </Button>
+                                </div>
                             </motion.div>
-                        </motion.div>
+                        </div>
                     </div>
 
-                    {/* Right Column - Preview Area */}
-                    <div className="lg:col-span-8">
+                    {/* RIGHT COLUMN: Preview / Result Area - Main Content */}
+                    <div className="lg:col-span-8 xl:col-span-9 relative h-full min-h-[500px] lg:min-h-[calc(100vh-8rem)]">
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.2 }}
-                            className="sticky top-24 h-[calc(100vh-8rem)] rounded-3xl bg-surface/50 border border-border backdrop-blur-sm p-2 shadow-2xl flex flex-col"
+                            className="h-full rounded-3xl bg-dark/30 border border-white/5 backdrop-blur-md p-2 flex flex-col shadow-2xl relative"
                         >
-                            <div className="flex-1 bg-darker/50 rounded-[22px] border border-white/5 relative overflow-hidden group flex flex-col">
-                                {isGenerating ? (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 z-10">
-                                        <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6 relative">
-                                            <div className="absolute inset-0 rounded-full border-4 border-primary/30 border-t-primary animate-spin" />
-                                            <Sparkles className="w-10 h-10 text-primary animate-pulse" />
+                            <div className="flex-1 bg-darker rounded-[22px] relative overflow-hidden flex flex-col items-center justify-center border border-white/5 group bg-[url('/grid.svg')] bg-center bg-repeat opacity-90">
+
+                                {/* Placeholder State */}
+                                {!isGenerating && !selectedImage && (
+                                    <div className="text-center p-8 max-w-lg relative z-10">
+                                        <div className="w-24 h-24 bg-surface/50 backdrop-blur-md rounded-3xl border border-border flex items-center justify-center mx-auto mb-8 shadow-2xl rotate-3 transform group-hover:scale-110 transition-transform duration-500">
+                                            <ImageIcon className="w-10 h-10 text-primary/50" />
                                         </div>
-                                        <h3 className="text-xl font-bold text-white mb-2">Generating your masterpiece...</h3>
-                                        <p className="text-text-tertiary text-center max-w-sm">
-                                            Our AI is analyzing your prompt, composing the scene, and rendering high-quality details.
+                                        <h3 className="text-2xl font-bold text-white mb-3">Canvas Ready</h3>
+                                        <p className="text-text-secondary text-lg leading-relaxed">
+                                            Your masterpieces appear here. <br />
+                                            Try "An astronaut meditating on Mars, cinematic lighting."
                                         </p>
                                     </div>
-                                ) : selectedImage ? (
-                                    <div className="relative flex-1 group/image">
-                                        <Image
-                                            src={selectedImage}
-                                            alt="Generated thumbnail"
-                                            fill
-                                            className="object-contain"
-                                        />
+                                )}
 
-                                        {/* Overlay Controls */}
-                                        <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-black/80 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity flex items-end justify-between">
-                                            <div className="space-y-1">
-                                                <p className="text-white font-medium line-clamp-1">{prompt.slice(0, 50)}...</p>
-                                                <p className="text-xs text-white/70">Generated with {selectedStyle} style</p>
-                                            </div>
+                                {/* Loading State */}
+                                {isGenerating && (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md z-20 p-8 text-center">
+                                        <div className="relative w-32 h-32 mb-8">
+                                            <div className="absolute inset-0 rounded-full border-4 border-primary/20" />
+                                            <div className="absolute inset-0 rounded-full border-4 border-t-primary border-r-transparent border-b-transparent border-l-transparent animate-spin duration-1000" />
+                                            <div className="absolute inset-4 rounded-full border-4 border-t-accent border-r-transparent border-b-transparent border-l-transparent animate-spin duration-[1.5s]" />
+                                        </div>
+                                        <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-linear-to-r from-white to-white/50 mb-3 animate-pulse">Generating...</h3>
+                                        <p className="text-text-secondary font-medium">Crafting pixels from your imagination</p>
+                                    </div>
+                                )}
+
+                                {/* Result Image */}
+                                {selectedImage && (
+                                    <div className="relative w-full h-full flex flex-col p-4 md:p-8">
+                                        <div className="flex-1 relative w-full h-full rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+                                            <Image
+                                                src={selectedImage}
+                                                alt="Generated Thumbnail"
+                                                fill
+                                                className="object-contain"
+                                                priority
+                                            />
+                                        </div>
+
+                                        {/* Hover Overlay Actions */}
+                                        <div className="absolute top-10 right-10 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-4 group-hover:translate-x-0">
                                             <Button
                                                 onClick={() => handleDownload(selectedImage!)}
-                                                className="bg-white text-black hover:bg-white/90"
+                                                size="icon"
+                                                className="h-12 w-12 rounded-xl bg-white text-black hover:bg-white/90 shadow-xl"
+                                                title="Download"
                                             >
-                                                <Download className="w-4 h-4 mr-2" />
-                                                Download
+                                                <Download className="w-5 h-5" />
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-12 w-12 rounded-xl bg-black/50 text-white hover:bg-black/70 backdrop-blur-md border border-white/10"
+                                                onClick={() => setSelectedImage(null)}
+                                                title="Clear"
+                                            >
+                                                <X className="w-5 h-5" />
                                             </Button>
                                         </div>
                                     </div>
-                                ) : (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8">
-                                        <div className="w-24 h-24 rounded-3xl bg-surface border border-border flex items-center justify-center mb-6 rotate-3 transform transition-transform group-hover:rotate-6 shadow-xl">
-                                            <ImageIcon className="w-10 h-10 text-text-tertiary" />
-                                        </div>
-                                        <h3 className="text-xl font-bold text-white mb-2">Ready to Create</h3>
-                                        <p className="text-text-secondary max-w-md">
-                                            Your generated thumbnails will appear here in high resolution.
-                                            Try describing a scene with "vibrant colors" and "expressive faces".
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* History Strip (if multiple) */}
-                                {generation?.image_urls && generation.image_urls.length > 1 && (
-                                    <div className="h-24 border-t border-white/10 bg-black/20 p-2 flex gap-2 overflow-x-auto">
-                                        {generation.image_urls.map((url, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={() => setSelectedImage(url)}
-                                                className={`relative aspect-video h-full rounded-lg overflow-hidden border-2 transition-all ${selectedImage === url
-                                                    ? "border-primary ring-2 ring-primary/20"
-                                                    : "border-transparent opacity-50 hover:opacity-100"
-                                                    }`}
-                                            >
-                                                <Image
-                                                    src={url}
-                                                    alt={`Option ${i + 1}`}
-                                                    fill
-                                                    className="object-cover"
-                                                />
-                                            </button>
-                                        ))}
-                                    </div>
                                 )}
                             </div>
+
+                            {/* Thumbnails History Strip - Bottom of Preview */}
+                            {generation?.image_urls && generation.image_urls.length > 0 && (
+                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 max-w-[90%] h-20 p-2 bg-black/60 backdrop-blur-xl rounded-2xl border border-white/10 flex gap-3 overflow-x-auto custom-scrollbar shadow-2xl z-20 opacity-0 group-hover:opacity-100 transition-opacity delay-100 hover:opacity-100">
+                                    {generation.image_urls.map((url, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setSelectedImage(url)}
+                                            className={cn(
+                                                "relative aspect-video h-full rounded-lg overflow-hidden border-2 transition-all flex-shrink-0",
+                                                selectedImage === url ? "border-primary ring-2 ring-primary/20 scale-105" : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
+                                            )}
+                                        >
+                                            <Image src={url} alt="" fill className="object-cover" />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </motion.div>
                     </div>
+
                 </div>
             </div>
         </div>

@@ -38,9 +38,10 @@ const bottomNavItems = [
 
 interface DashboardSidebarProps {
     className?: string; // Allow passing standard className for visibility control
+    onLinkClick?: () => void;
 }
 
-export function DashboardSidebar({ className }: DashboardSidebarProps) {
+export function DashboardSidebar({ className, onLinkClick }: DashboardSidebarProps) {
     const pathname = usePathname();
     const router = useRouter();
     const { signOut } = useAuth();
@@ -49,6 +50,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
     const handleSignOut = async () => {
         await signOut();
         setIsSignOutOpen(false);
+        onLinkClick?.(); // Close sidebar if open
         router.push("/");
     };
 
@@ -56,11 +58,11 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
         <aside className={cn("hidden lg:flex flex-col w-72 bg-dark/50 border-r border-border backdrop-blur-xl h-screen fixed left-0 top-0 z-40 transition-all duration-300", className)}>
             {/* Logo */}
             <div className="h-20 flex items-center px-8 border-b border-border/50">
-                <Link href="/" className="flex items-center gap-3 group">
-                    <div className="relative w-10 h-10 rounded-xl bg-linear-to-br from-primary to-accent flex items-center justify-center shadow-glow group-hover:shadow-glow-accent transition-all duration-500">
-                        <Sparkles className="w-5 h-5 text-white animate-pulse" />
+                <Link href="/" className="flex items-center gap-3 group" onClick={onLinkClick}>
+                    <div className="relative w-12 h-12 rounded-xl flex items-center justify-center">
+                        <Image src="/images/logo.png" alt="Logo" width={50} height={50} />
                     </div>
-                    <span className="text-2xl font-bold text-white font-display tracking-tight">
+                    <span className="text-3xl font-bold text-white font-display tracking-tight">
                         Lexip
                     </span>
                 </Link>
@@ -78,6 +80,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                onClick={onLinkClick}
                                 className={cn(
                                     "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative",
                                     isActive
@@ -103,6 +106,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
                         <Link
                             key={item.href}
                             href={item.href}
+                            onClick={onLinkClick}
                             className={cn(
                                 "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group",
                                 pathname === item.href
@@ -130,7 +134,7 @@ export function DashboardSidebar({ className }: DashboardSidebarProps) {
                     <div className="absolute -right-10 -top-10 w-32 h-32 bg-primary/20 blur-3xl rounded-full group-hover:bg-primary/30 transition-all" />
                     <h4 className="font-bold text-white relative z-10 mb-1">Upgrade Plan</h4>
                     <p className="text-xs text-text-secondary relative z-10 mb-3">Unlock unlimited generations.</p>
-                    <Link href="/pricing" className="text-xs font-semibold text-primary hover:text-accent transition-colors relative z-10 block">
+                    <Link href="/pricing" className="text-xs font-semibold text-primary hover:text-accent transition-colors relative z-10 block" onClick={onLinkClick}>
                         View Pricing →
                     </Link>
                 </div>

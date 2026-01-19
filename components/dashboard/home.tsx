@@ -33,18 +33,8 @@ interface DashboardHomeProps {
     recentGenerations: ThumbnailGeneration[];
     totalGenerations: number;
     usage: UsageLimit | null;
+    chartData: { name: string; value: number; fullDate?: string }[];
 }
-
-// Mock data for the chart - in production this would come from the database
-const data = [
-    { name: 'Mon', value: 4 },
-    { name: 'Tue', value: 7 },
-    { name: 'Wed', value: 5 },
-    { name: 'Thu', value: 12 },
-    { name: 'Fri', value: 8 },
-    { name: 'Sat', value: 15 },
-    { name: 'Sun', value: 10 },
-];
 
 export function DashboardHome({
     user,
@@ -52,42 +42,54 @@ export function DashboardHome({
     recentGenerations,
     totalGenerations,
     usage,
+    chartData,
 }: DashboardHomeProps) {
     const plan = subscription?.plan || "free";
     const usedToday = usage?.generations_count || 0;
     const limitToday = usage?.max_generations || 5;
     const remainingToday = Math.max(0, limitToday - usedToday);
 
-    const stats = [
-        {
-            label: "Total Generations",
-            value: totalGenerations,
-            change: "+12.5%",
-            trend: "up",
-            icon: Wand2,
-            color: "text-primary",
-            bg: "bg-primary/10",
-            border: "border-primary/20"
-        },
-        {
-            label: "Credits Remaining",
-            value: remainingToday,
-            subtext: "Reset at midnight",
-            icon: Zap,
-            color: "text-[#F59E0B]",
-            bg: "bg-[#F59E0B]/10",
-            border: "border-[#F59E0B]/20"
-        },
-        {
-            label: "Active Plan",
-            value: plan.charAt(0).toUpperCase() + plan.slice(1),
-            action: "Manage",
-            icon: Crown,
-            color: "text-accent",
-            bg: "bg-accent/10",
-            border: "border-accent/20"
-        },
-    ];
+    const stats: {
+        label: string;
+        value: string | number;
+        change?: string;
+        trend?: string;
+        subtext?: string;
+        action?: string;
+        icon: any;
+        color: string;
+        bg: string;
+        border: string;
+    }[] = [
+            {
+                label: "Total Generations",
+                value: totalGenerations,
+                // change: "+12.5%", // TODO: Calculate real trend
+                // trend: "up",
+                icon: Wand2,
+                color: "text-primary",
+                bg: "bg-primary/10",
+                border: "border-primary/20"
+            },
+            {
+                label: "Credits Remaining",
+                value: remainingToday,
+                subtext: "Reset at midnight",
+                icon: Zap,
+                color: "text-[#F59E0B]",
+                bg: "bg-[#F59E0B]/10",
+                border: "border-[#F59E0B]/20"
+            },
+            {
+                label: "Active Plan",
+                value: plan.charAt(0).toUpperCase() + plan.slice(1),
+                action: "Manage",
+                icon: Crown,
+                color: "text-accent",
+                bg: "bg-accent/10",
+                border: "border-accent/20"
+            },
+        ];
 
     return (
         <div className="space-y-6">
@@ -171,9 +173,9 @@ export function DashboardHome({
                         </div>
                     </div>
 
-                    <div className="flex-1 h-[300px] w-full">
+                    <div className="w-full h-[300px] min-h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={data}>
+                            <AreaChart data={chartData}>
                                 <defs>
                                     <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#6366F1" stopOpacity={0.3} />

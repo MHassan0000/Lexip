@@ -22,13 +22,16 @@ export default function DashboardLayout({
             <DashboardSidebar />
 
             {/* Mobile Sidebar (Drawer) */}
-            <div className={`fixed inset-0 z-50 lg:hidden pointer-events-none transition-all duration-300 ${isMobileOpen ? 'pointer-events-auto' : ''}`}>
+            <div className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${isMobileOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                 <div
                     className={`absolute inset-0 bg-black/60 transition-opacity duration-300 ${isMobileOpen ? 'opacity-100' : 'opacity-0'}`}
                     onClick={() => setIsMobileOpen(false)}
                 />
                 <div className={`absolute top-0 left-0 w-72 h-full transition-transform duration-300 transform ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-                    <DashboardSidebar className="flex w-72 h-full static border-r-0" />
+                    <DashboardSidebar
+                        className="flex w-72 h-full static border-r-0 pointer-events-auto"
+                        onLinkClick={() => setIsMobileOpen(false)}
+                    />
                 </div>
             </div>
 

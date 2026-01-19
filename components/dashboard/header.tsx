@@ -74,11 +74,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
 
             {/* Right: Actions & Profile */}
             <div className="flex items-center gap-2 sm:gap-4">
-                {/* Notifications */}
-                <Button variant="ghost" size="icon" className="relative text-text-secondary hover:text-white hover:bg-surface-elevated transition-transform hover:scale-105 active:scale-95">
-                    <Bell className="w-5 h-5" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full animate-pulse" />
-                </Button>
+
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -89,6 +85,7 @@ export function DashboardHeader({ onMenuClick }: DashboardHeaderProps) {
                                     alt="User"
                                     fill
                                     className="object-cover"
+                                    sizes="40px"
                                 />
                             ) : (
                                 <div className="w-full h-full bg-linear-to-br from-primary to-accent flex items-center justify-center text-white font-bold">

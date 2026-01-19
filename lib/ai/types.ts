@@ -1,11 +1,9 @@
-// AI Provider abstraction types
-
 export interface GenerationOptions {
     prompt: string;
     style?: StylePreset;
     aspectRatio?: "16:9" | "1:1" | "4:3";
     quality?: "standard" | "hd" | "4k";
-    count?: number; // Number of images to generate
+    count?: number;
     referenceImage?: {
         base64: string;
         mimeType: string;
@@ -31,7 +29,6 @@ export interface AIProvider {
     generateImages(options: GenerationOptions): Promise<GenerationResult>;
 }
 
-// Style presets for thumbnail generation
 export interface StylePreset {
     id: string;
     name: string;
@@ -97,10 +94,7 @@ export function getStyleById(styleId: string): StylePreset | undefined {
 
 export function buildEnhancedPrompt(prompt: string, style?: StylePreset): string {
     const basePrompt = `Create a YouTube thumbnail image: ${prompt}`;
-
     const styleModifier = style?.promptModifier || "professional YouTube thumbnail style, eye-catching, high quality";
-
     const qualityModifiers = "4K quality, highly detailed, vibrant colors, professional composition, youtube thumbnail aspect ratio 16:9";
-
     return `${basePrompt}. Style: ${styleModifier}. ${qualityModifiers}`;
 }

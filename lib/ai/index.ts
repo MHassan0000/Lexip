@@ -5,22 +5,32 @@ import type { AIProvider } from "./types";
 import { GeminiProvider } from "./providers/gemini";
 import { PollinationsProvider } from "./providers/pollinations";
 
-export type AIProviderType = "gemini" | "pollinations";
+export type AIProviderType = "gemini" | "pollinations" | "auto";
 
 let cachedProvider: AIProvider | null = null;
 let cachedProviderType: AIProviderType | null = null;
 
-// Default to pollinations (free, no API key needed)
-const DEFAULT_PROVIDER: AIProviderType = "pollinations";
+// Auto-detect: use Gemini if API key exists, otherwise Pollinations (free)
+function getAutoProvider(): AIProviderType {
+    if (process.env.GEMINI_API_KEY) {
+        console.log("[AI] Using Gemini (API key found)");
+        return "gemini";
+    }
+    console.log("[AI] Using Pollinations (free, no API key needed)");
+    return "pollinations";
+}
 
-export function getAIProvider(providerType: AIProviderType = DEFAULT_PROVIDER): AIProvider {
+export function getAIProvider(providerType: AIProviderType = "auto"): AIProvider {
+    // Resolve "auto" to actual provider
+    const resolvedType = providerType === "auto" ? getAutoProvider() : providerType;
+
     // Return cached provider if same type
-    if (cachedProvider && cachedProviderType === providerType) {
+    if (cachedProvider && cachedProviderType === resolvedType) {
         return cachedProvider;
     }
 
     // Create new provider based on type
-    switch (providerType) {
+    switch (resolvedType) {
         case "gemini":
             cachedProvider = new GeminiProvider();
             break;
@@ -28,12 +38,14 @@ export function getAIProvider(providerType: AIProviderType = DEFAULT_PROVIDER): 
             cachedProvider = new PollinationsProvider();
             break;
         default:
-            throw new Error(`Unknown AI provider: ${providerType}`);
+            // Fallback to Pollinations
+            cachedProvider = new PollinationsProvider();
     }
 
-    cachedProviderType = providerType;
+    cachedProviderType = resolvedType;
     return cachedProvider;
 }
 
 // Re-export types for convenience
 export * from "./types";
+

@@ -21,7 +21,7 @@ export class PollinationsProvider implements AIProvider {
             for (let i = 0; i < count; i++) {
                 try {
                     // Add seed for variety when generating multiple images
-                    const seed = Date.now() + i * 1000;
+                    const seed = Math.floor(Math.random() * 1000000) + i;
                     const promptWithSeed = i > 0
                         ? `${enhancedPrompt}, variation ${i + 1}`
                         : enhancedPrompt;
@@ -30,35 +30,59 @@ export class PollinationsProvider implements AIProvider {
                     const encodedPrompt = encodeURIComponent(promptWithSeed);
                     const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1280&height=720&seed=${seed}&nologo=true`;
 
-                    // Fetch the image
-                    const response = await fetch(imageUrl);
+                    console.log(`[Pollinations] Fetching image ${i + 1}: ${imageUrl.substring(0, 80)}...`);
+
+                    // Fetch with timeout (Pollinations can take 30-60s for first generation)
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 second timeout
+
+                    const response = await fetch(imageUrl, {
+                        signal: controller.signal,
+                        headers: {
+                            'Accept': 'image/*',
+                        },
+                    });
+
+                    clearTimeout(timeoutId);
 
                     if (!response.ok) {
-                        console.error(`[Pollinations] Failed to fetch image ${i + 1}: ${response.status}`);
+                        console.error(`[Pollinations] Failed to fetch image ${i + 1}: ${response.status} ${response.statusText}`);
                         continue;
                     }
 
+                    const contentType = response.headers.get('content-type') || 'image/jpeg';
+
                     // Convert to base64
                     const arrayBuffer = await response.arrayBuffer();
+
+                    if (arrayBuffer.byteLength === 0) {
+                        console.error(`[Pollinations] Empty response for image ${i + 1}`);
+                        continue;
+                    }
+
                     const base64 = Buffer.from(arrayBuffer).toString("base64");
 
                     images.push({
                         base64,
-                        mimeType: "image/jpeg",
+                        mimeType: contentType.includes('png') ? 'image/png' : 'image/jpeg',
                         width: 1280,
                         height: 720,
                     });
 
-                    console.log(`[Pollinations] Generated image ${i + 1}/${count}`);
+                    console.log(`[Pollinations] Generated image ${i + 1}/${count} (${Math.round(arrayBuffer.byteLength / 1024)}KB)`);
                 } catch (imageError) {
-                    console.error(`[Pollinations] Error generating image ${i + 1}:`, imageError);
+                    if (imageError instanceof Error && imageError.name === 'AbortError') {
+                        console.error(`[Pollinations] Timeout generating image ${i + 1}`);
+                    } else {
+                        console.error(`[Pollinations] Error generating image ${i + 1}:`, imageError);
+                    }
                 }
             }
 
             if (images.length === 0) {
                 return {
                     success: false,
-                    error: "Failed to generate any images",
+                    error: "Failed to generate images. The AI service may be temporarily unavailable. Please try again.",
                 };
             }
 

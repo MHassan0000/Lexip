@@ -3,21 +3,28 @@
 
 import type { AIProvider } from "./types";
 import { GeminiProvider } from "./providers/gemini";
-import { PollinationsProvider } from "./providers/pollinations";
+import { TogetherProvider } from "./providers/together";
 
-export type AIProviderType = "gemini" | "pollinations" | "auto";
+export type AIProviderType = "gemini" | "together" | "auto";
 
 let cachedProvider: AIProvider | null = null;
 let cachedProviderType: AIProviderType | null = null;
 
-// Auto-detect: use Gemini if API key exists, otherwise Pollinations (free)
+// Auto-detect: prefer Together.ai (fast), fallback to Gemini
 function getAutoProvider(): AIProviderType {
+    // Together.ai is fast (< 10s) and has free credits
+    if (process.env.TOGETHER_API_KEY) {
+        console.log("[AI] Using Together.ai (fast, free credits)");
+        return "together";
+    }
+    // Gemini if configured
     if (process.env.GEMINI_API_KEY) {
         console.log("[AI] Using Gemini (API key found)");
         return "gemini";
     }
-    console.log("[AI] Using Pollinations (free, no API key needed)");
-    return "pollinations";
+    // Default to Together (will show API key error if not configured)
+    console.log("[AI] No API key found - defaulting to Together.ai");
+    return "together";
 }
 
 export function getAIProvider(providerType: AIProviderType = "auto"): AIProvider {
@@ -34,12 +41,11 @@ export function getAIProvider(providerType: AIProviderType = "auto"): AIProvider
         case "gemini":
             cachedProvider = new GeminiProvider();
             break;
-        case "pollinations":
-            cachedProvider = new PollinationsProvider();
+        case "together":
+            cachedProvider = new TogetherProvider();
             break;
         default:
-            // Fallback to Pollinations
-            cachedProvider = new PollinationsProvider();
+            cachedProvider = new TogetherProvider();
     }
 
     cachedProviderType = resolvedType;
@@ -48,4 +54,3 @@ export function getAIProvider(providerType: AIProviderType = "auto"): AIProvider
 
 // Re-export types for convenience
 export * from "./types";
-

@@ -90,13 +90,16 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
                 status: "active",
             })
             .eq("user_id", userId);
+
+        // Refresh usage limits to apply new plan limits immediately
+        await supabaseAdmin.rpc("get_or_create_daily_usage", { p_user_id: userId });
     }
 
     console.log(`Checkout completed for user ${userId}, plan: ${planId}`);
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-    const userId = subscription.metadata?.supabase_user_id;
+    let userId = subscription.metadata?.supabase_user_id;
 
     if (!userId) {
         // Try to find user by subscription ID
@@ -110,6 +113,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
             console.error("Could not find user for subscription:", subscription.id);
             return;
         }
+        userId = sub.user_id;
     }
 
     // Determine plan from price
@@ -147,10 +151,20 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
         })
         .eq("stripe_subscription_id", subscription.id);
 
-    console.log(`Subscription updated: ${subscription.id}, status: ${subscription.status}`);
+    // Refresh usage limits to apply new plan limits immediately
+    await supabaseAdmin.rpc("get_or_create_daily_usage", { p_user_id: userId });
+
+    console.log(`Subscription updated: ${subscription.id}, status: ${subscription.status}, user: ${userId}`);
 }
 
 async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
+    // Get user ID before nullifying the subscription ID
+    const { data: sub } = await supabaseAdmin
+        .from("subscriptions")
+        .select("user_id")
+        .eq("stripe_subscription_id", subscription.id)
+        .single();
+
     // Downgrade to free plan
     await supabaseAdmin
         .from("subscriptions")
@@ -163,7 +177,12 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
         })
         .eq("stripe_subscription_id", subscription.id);
 
-    console.log(`Subscription deleted: ${subscription.id}`);
+    // Refresh usage limits to apply free tier limits
+    if (sub?.user_id) {
+        await supabaseAdmin.rpc("get_or_create_daily_usage", { p_user_id: sub.user_id });
+    }
+
+    console.log(`Subscription deleted: ${subscription.id}, user: ${sub?.user_id}`);
 }
 
 async function handlePaymentSucceeded(invoice: Stripe.Invoice) {

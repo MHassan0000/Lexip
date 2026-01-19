@@ -220,6 +220,15 @@ BEGIN
         INSERT INTO public.usage_limits (user_id, period_start, period_type, generations_count, max_generations)
         VALUES (p_user_id, CURRENT_DATE, 'daily', 0, v_max_gens)
         RETURNING * INTO v_usage;
+    ELSE
+        -- Update max_generations if plan has changed (user upgraded/downgraded)
+        IF v_usage.max_generations != v_max_gens THEN
+            UPDATE public.usage_limits
+            SET max_generations = v_max_gens,
+                updated_at = NOW()
+            WHERE id = v_usage.id
+            RETURNING * INTO v_usage;
+        END IF;
     END IF;
 
     RETURN v_usage;

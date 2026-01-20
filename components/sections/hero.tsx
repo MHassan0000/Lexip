@@ -66,12 +66,20 @@ export function Hero() {
                                 Generate for Free
                             </Button>
                         </Link>
-                        <Link href="/#how-it-works">
-                            <Button size="xl" variant="secondary" className="rounded-full bg-surface border-border text-white hover:bg-border">
-                                <Play className="w-4 h-4 mr-2 fill-white" />
-                                Watch Demo
-                            </Button>
-                        </Link>
+                        <Button
+                            size="xl"
+                            variant="secondary"
+                            className="rounded-full bg-surface border-border text-white hover:bg-border"
+                            onClick={() => {
+                                document.getElementById('how-it-works')?.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                            }}
+                        >
+                            <Play className="w-4 h-4 mr-2 fill-white" />
+                            Watch Demo
+                        </Button>
                     </motion.div>
                 </div>
 

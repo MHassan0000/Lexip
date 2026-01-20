@@ -1,16 +1,14 @@
-// AI Provider Factory
-// Provider-agnostic AI client that can switch between different AI providers
-
 import type { AIProvider } from "./types";
 import { GeminiProvider } from "./providers/gemini";
 import { TogetherProvider } from "./providers/together";
+import { PollinationsProvider } from "./providers/pollinations";
 
-export type AIProviderType = "gemini" | "together" | "auto";
+export type AIProviderType = "gemini" | "together" | "pollinations" | "auto";
 
 let cachedProvider: AIProvider | null = null;
 let cachedProviderType: AIProviderType | null = null;
 
-// Auto-detect: prefer Together.ai (fast), fallback to Gemini
+// Auto-detect: prefer Together.ai, then Gemini, fallback to Pollinations (free, no key)
 function getAutoProvider(): AIProviderType {
     if (process.env.TOGETHER_API_KEY) {
         return "together";
@@ -18,7 +16,8 @@ function getAutoProvider(): AIProviderType {
     if (process.env.GEMINI_API_KEY) {
         return "gemini";
     }
-    return "together";
+    // Fallback to Pollinations for local testing (free, no API key needed)
+    return "pollinations";
 }
 
 export function getAIProvider(providerType: AIProviderType = "auto"): AIProvider {
@@ -35,13 +34,15 @@ export function getAIProvider(providerType: AIProviderType = "auto"): AIProvider
         case "together":
             cachedProvider = new TogetherProvider();
             break;
+        case "pollinations":
+            cachedProvider = new PollinationsProvider();
+            break;
         default:
-            cachedProvider = new TogetherProvider();
+            cachedProvider = new PollinationsProvider();
     }
 
     cachedProviderType = resolvedType;
     return cachedProvider;
 }
 
-// Re-export types for convenience
 export * from "./types";

@@ -8,6 +8,9 @@ export interface GenerationOptions {
         base64: string;
         mimeType: string;
     };
+    // Plan-based quality settings
+    plan?: "free" | "pro" | "enterprise";
+    resolution?: { width: number; height: number };
 }
 
 export interface GeneratedImage {

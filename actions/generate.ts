@@ -1,7 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { getAIProvider, getStyleById } from "@/lib/ai";
+import { generateWithFallback, getStyleById } from "@/lib/ai";
 import { uploadMultipleImages } from "@/lib/supabase/storage";
 import { revalidatePath } from "next/cache";
 import type { ThumbnailGeneration } from "@/types/database";
@@ -63,6 +63,23 @@ export async function generateThumbnail(
             };
         }
 
+        // Get user's subscription to determine quality
+        const { data: subscription } = await supabase
+            .from("subscriptions")
+            .select("plan")
+            .eq("user_id", user.id)
+            .single();
+
+        const plan = (subscription?.plan || "free") as "free" | "pro" | "enterprise";
+
+        // Plan-based resolution
+        const resolutionMap = {
+            free: { width: 1280, height: 720 },      // 720p
+            pro: { width: 1920, height: 1080 },      // 1080p HD
+            enterprise: { width: 3840, height: 2160 } // 4K
+        };
+        const resolution = resolutionMap[plan];
+
         const style = validatedInput.styleId ? getStyleById(validatedInput.styleId) : undefined;
 
         const { data: generation, error: insertError } = await supabase
@@ -75,6 +92,8 @@ export async function generateThumbnail(
                 metadata: {
                     style_name: style?.name,
                     requested_count: validatedInput.count || 1,
+                    plan,
+                    resolution: `${resolution.width}x${resolution.height}`,
                 },
             })
             .select()
@@ -84,12 +103,13 @@ export async function generateThumbnail(
             return { success: false, error: "Failed to create generation record" };
         }
 
-        const provider = getAIProvider();
-        const result = await provider.generateImages({
+        const result = await generateWithFallback({
             prompt: validatedInput.prompt,
             style,
             count: validatedInput.count || 1,
             referenceImage: validatedInput.referenceImage,
+            plan,
+            resolution,
         });
 
         if (!result.success || !result.images || result.images.length === 0) {

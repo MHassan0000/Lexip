@@ -1,5 +1,4 @@
-// Together.ai Provider - Fast, free $25 credits for new accounts
-// https://together.ai - Fast AI image generation with FLUX model
+
 
 import type { AIProvider, GenerationOptions, GenerationResult, GeneratedImage } from "../types";
 import { buildEnhancedPrompt } from "../types";
@@ -11,7 +10,7 @@ export class TogetherProvider implements AIProvider {
     private apiKey: string;
 
     constructor() {
-        // SECURITY: API key loaded from environment only
+
         this.apiKey = process.env.TOGETHER_API_KEY || "";
     }
 
@@ -26,6 +25,7 @@ export class TogetherProvider implements AIProvider {
         try {
             const count = options.count || 1;
             const enhancedPrompt = buildEnhancedPrompt(options.prompt, options.style);
+            const { width, height } = options.resolution || { width: 1280, height: 720 };
 
             const images: GeneratedImage[] = [];
 
@@ -40,8 +40,8 @@ export class TogetherProvider implements AIProvider {
                         body: JSON.stringify({
                             model: "black-forest-labs/FLUX.1-schnell-Free",
                             prompt: enhancedPrompt,
-                            width: 1280,
-                            height: 720,
+                            width,
+                            height,
                             steps: 4,
                             n: 1,
                             response_format: "b64_json",
@@ -49,7 +49,7 @@ export class TogetherProvider implements AIProvider {
                     });
 
                     if (!response.ok) {
-                        // Don't log error details that might contain sensitive info
+
                         continue;
                     }
 
@@ -64,7 +64,7 @@ export class TogetherProvider implements AIProvider {
                         });
                     }
                 } catch {
-                    // Silent fail for individual image errors
+                    // Silent fail for image errors
                 }
             }
 

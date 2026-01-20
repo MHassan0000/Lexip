@@ -8,6 +8,7 @@ export class PollinationsProvider implements AIProvider {
         try {
             const count = options.count || 1;
             const enhancedPrompt = buildEnhancedPrompt(options.prompt, options.style);
+            const { width, height } = options.resolution || { width: 1280, height: 720 };
 
             const images: GeneratedImage[] = [];
 
@@ -15,11 +16,10 @@ export class PollinationsProvider implements AIProvider {
                 try {
                     const seed = Math.floor(Math.random() * 1000000) + i;
                     const encodedPrompt = encodeURIComponent(enhancedPrompt);
-                    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1280&height=720&seed=${seed}&nologo=true`;
+                    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
 
-                    // Pollinations can take 30-60 seconds for first generation
                     const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
+                    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
                     const response = await fetch(imageUrl, {
                         signal: controller.signal,
@@ -40,8 +40,8 @@ export class PollinationsProvider implements AIProvider {
                     images.push({
                         base64,
                         mimeType: contentType.includes('png') ? 'image/png' : 'image/jpeg',
-                        width: 1280,
-                        height: 720,
+                        width,
+                        height,
                     });
                 } catch {
                     // Silent fail for individual image errors

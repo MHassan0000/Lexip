@@ -3,18 +3,17 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     Download,
     Trash2,
     Clock,
     ChevronLeft,
     ChevronRight,
-    Search,
-    Filter,
     X,
     Loader2,
     Wand2,
+    AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteGeneration } from "@/actions/generations";
@@ -37,20 +36,21 @@ export function HistoryView({
     const router = useRouter();
     const [deletingId, setDeletingId] = useState<string | null>(null);
     const [selectedGen, setSelectedGen] = useState<ThumbnailGeneration | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; prompt: string } | null>(null);
 
     const handleDelete = async (id: string) => {
-        if (!confirm("Are you sure you want to delete this generation?")) return;
-
+        setDeleteConfirm(null);
         setDeletingId(id);
         const result = await deleteGeneration(id);
         setDeletingId(null);
 
         if (result.success) {
+            if (selectedGen?.id === id) setSelectedGen(null);
             router.refresh();
         }
     };
 
-    const handleDownload = async (imageUrl: string, prompt: string) => {
+    const handleDownload = async (imageUrl: string) => {
         try {
             const response = await fetch(imageUrl);
             const blob = await response.blob();
@@ -62,8 +62,8 @@ export function HistoryView({
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-        } catch (err) {
-            console.error("Download error:", err);
+        } catch {
+            // Silent fail
         }
     };
 
@@ -133,11 +133,10 @@ export function HistoryView({
                                     </div>
                                 )}
 
-                                {/* Status Badge */}
                                 {gen.status !== "completed" && (
                                     <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-medium ${gen.status === "processing"
-                                            ? "bg-yellow-500/20 text-yellow-500"
-                                            : "bg-red-500/20 text-red-500"
+                                        ? "bg-yellow-500/20 text-yellow-500"
+                                        : "bg-red-500/20 text-red-500"
                                         }`}>
                                         {gen.status}
                                     </div>
@@ -157,7 +156,7 @@ export function HistoryView({
                                     <div className="flex items-center gap-1">
                                         {gen.image_urls && gen.image_urls[0] && (
                                             <button
-                                                onClick={() => handleDownload(gen.image_urls![0], gen.prompt)}
+                                                onClick={() => handleDownload(gen.image_urls![0])}
                                                 className="p-2 rounded-lg text-text-secondary hover:text-white hover:bg-dark transition-colors"
                                                 title="Download"
                                             >
@@ -165,7 +164,7 @@ export function HistoryView({
                                             </button>
                                         )}
                                         <button
-                                            onClick={() => handleDelete(gen.id)}
+                                            onClick={() => setDeleteConfirm({ id: gen.id, prompt: gen.prompt })}
                                             disabled={deletingId === gen.id}
                                             className="p-2 rounded-lg text-text-secondary hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                                             title="Delete"
@@ -203,8 +202,8 @@ export function HistoryView({
                     <Link
                         href={`/history?page=${Math.max(1, currentPage - 1)}`}
                         className={`p-2 rounded-lg border transition-colors ${currentPage === 1
-                                ? "border-border text-text-tertiary cursor-not-allowed"
-                                : "border-border text-text-secondary hover:text-white hover:border-primary"
+                            ? "border-border text-text-tertiary cursor-not-allowed"
+                            : "border-border text-text-secondary hover:text-white hover:border-primary"
                             }`}
                     >
                         <ChevronLeft className="w-5 h-5" />
@@ -228,8 +227,8 @@ export function HistoryView({
                                     key={pageNum}
                                     href={`/history?page=${pageNum}`}
                                     className={`w-10 h-10 rounded-lg flex items-center justify-center text-sm font-medium transition-colors ${currentPage === pageNum
-                                            ? "bg-primary text-white"
-                                            : "text-text-secondary hover:text-white hover:bg-surface"
+                                        ? "bg-primary text-white"
+                                        : "text-text-secondary hover:text-white hover:bg-surface"
                                         }`}
                                 >
                                     {pageNum}
@@ -241,8 +240,8 @@ export function HistoryView({
                     <Link
                         href={`/history?page=${Math.min(totalPages, currentPage + 1)}`}
                         className={`p-2 rounded-lg border transition-colors ${currentPage === totalPages
-                                ? "border-border text-text-tertiary cursor-not-allowed"
-                                : "border-border text-text-secondary hover:text-white hover:border-primary"
+                            ? "border-border text-text-tertiary cursor-not-allowed"
+                            : "border-border text-text-secondary hover:text-white hover:border-primary"
                             }`}
                     >
                         <ChevronRight className="w-5 h-5" />
@@ -250,63 +249,120 @@ export function HistoryView({
                 </div>
             )}
 
-            {/* Lightbox Modal */}
-            {selectedGen && (
-                <div
-                    className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
-                    onClick={() => setSelectedGen(null)}
-                >
+            {/* Delete Confirmation Modal */}
+            <AnimatePresence>
+                {deleteConfirm && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative max-w-4xl w-full bg-surface rounded-2xl overflow-hidden"
-                        onClick={(e) => e.stopPropagation()}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                        onClick={() => setDeleteConfirm(null)}
                     >
-                        <button
-                            onClick={() => setSelectedGen(null)}
-                            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative max-w-md w-full bg-surface rounded-2xl p-6 border border-border"
+                            onClick={(e) => e.stopPropagation()}
                         >
-                            <X className="w-5 h-5" />
-                        </button>
-
-                        {selectedGen.image_urls && selectedGen.image_urls[0] && (
-                            <div className="relative aspect-video">
-                                <Image
-                                    src={selectedGen.image_urls[0]}
-                                    alt={selectedGen.prompt}
-                                    fill
-                                    className="object-contain"
-                                />
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center">
+                                    <AlertTriangle className="w-6 h-6 text-red-500" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-white">Delete Generation?</h3>
+                                    <p className="text-sm text-text-secondary">This action cannot be undone</p>
+                                </div>
                             </div>
-                        )}
 
-                        <div className="p-6 border-t border-border">
-                            <p className="text-white mb-4">{selectedGen.prompt}</p>
-                            <div className="flex items-center gap-3">
-                                {selectedGen.image_urls && selectedGen.image_urls[0] && (
-                                    <Button
-                                        onClick={() => handleDownload(selectedGen.image_urls![0], selectedGen.prompt)}
-                                        className="bg-green-600 hover:bg-green-700 text-white"
-                                    >
-                                        <Download className="w-4 h-4 mr-2" />
-                                        Download
-                                    </Button>
-                                )}
+                            <p className="text-text-secondary mb-6 line-clamp-2 text-sm bg-dark rounded-lg p-3 border border-border">
+                                "{deleteConfirm.prompt}"
+                            </p>
+
+                            <div className="flex gap-3">
                                 <Button
                                     variant="secondary"
-                                    onClick={() => {
-                                        handleDelete(selectedGen.id);
-                                        setSelectedGen(null);
-                                    }}
+                                    className="flex-1"
+                                    onClick={() => setDeleteConfirm(null)}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+                                    onClick={() => handleDelete(deleteConfirm.id)}
                                 >
                                     <Trash2 className="w-4 h-4 mr-2" />
                                     Delete
                                 </Button>
                             </div>
-                        </div>
+                        </motion.div>
                     </motion.div>
-                </div>
-            )}
+                )}
+            </AnimatePresence>
+
+            {/* Lightbox Modal */}
+            <AnimatePresence>
+                {selectedGen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                        onClick={() => setSelectedGen(null)}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="relative max-w-4xl w-full bg-surface rounded-2xl overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setSelectedGen(null)}
+                                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            {selectedGen.image_urls && selectedGen.image_urls[0] && (
+                                <div className="relative aspect-video">
+                                    <Image
+                                        src={selectedGen.image_urls[0]}
+                                        alt={selectedGen.prompt}
+                                        fill
+                                        className="object-contain"
+                                    />
+                                </div>
+                            )}
+
+                            <div className="p-6 border-t border-border">
+                                <p className="text-white mb-4">{selectedGen.prompt}</p>
+                                <div className="flex items-center gap-3">
+                                    {selectedGen.image_urls && selectedGen.image_urls[0] && (
+                                        <Button
+                                            onClick={() => handleDownload(selectedGen.image_urls![0])}
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                        >
+                                            <Download className="w-4 h-4 mr-2" />
+                                            Download
+                                        </Button>
+                                    )}
+                                    <Button
+                                        variant="secondary"
+                                        onClick={() => {
+                                            setDeleteConfirm({ id: selectedGen.id, prompt: selectedGen.prompt });
+                                        }}
+                                    >
+                                        <Trash2 className="w-4 h-4 mr-2" />
+                                        Delete
+                                    </Button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

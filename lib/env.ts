@@ -9,12 +9,13 @@ const requiredEnvVars = [
     "SUPABASE_SERVICE_ROLE_KEY",
     "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
     "STRIPE_SECRET_KEY",
-    "GEMINI_API_KEY",
 ] as const;
 
 const optionalEnvVars = [
     "NEXT_PUBLIC_APP_URL",
     "STRIPE_WEBHOOK_SECRET",
+    "GEMINI_API_KEY",
+    "TOGETHER_API_KEY",
     "NODE_ENV",
 ] as const;
 
@@ -42,7 +43,7 @@ if (typeof window === "undefined") {
     validateEnv();
 }
 
-// Type-safe environment variable access
+// Type-safe environment variable access (SERVER-SIDE ONLY - never exposed to client)
 export const env = {
     // Supabase
     supabase: {
@@ -58,9 +59,10 @@ export const env = {
         webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
     },
 
-    // AI
+    // AI (optional - uses fallback system)
     ai: {
-        geminiApiKey: process.env.GEMINI_API_KEY!,
+        geminiApiKey: process.env.GEMINI_API_KEY,
+        togetherApiKey: process.env.TOGETHER_API_KEY,
     },
 
     // App

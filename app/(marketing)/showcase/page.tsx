@@ -11,32 +11,32 @@ const examples = [
     {
         title: "Gaming - Minecraft",
         category: "Gaming",
-        color: "from-green-500 to-emerald-700"
+        color: "black"
     },
     {
         title: "Tech Review - iPhone 16",
         category: "Tech",
-        color: "from-blue-500 to-indigo-700"
+        color: "black"
     },
     {
         title: "Vlog - Travel Japan",
         category: "Vlog",
-        color: "from-pink-500 to-rose-700"
+        color: "black"
     },
     {
         title: "Finance - Bitcoin Crash",
         category: "Finance",
-        color: "from-yellow-500 to-orange-700"
+        color: "black"
     },
     {
         title: "Fitness - Abs Workout",
         category: "Fitness",
-        color: "from-red-500 to-red-800"
+        color: "black"
     },
     {
         title: "Cooking - Best Burger",
         category: "Food",
-        color: "from-orange-400 to-amber-600"
+        color: "black"
     }
 ];
 
